@@ -1,0 +1,113 @@
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 3000;
+}
+
+.modal {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: white;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    padding: 24px;
+    z-index: 3001;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.handle {
+    width: 40px;
+    height: 4px;
+    background-color: #E0E0E0;
+    border-radius: 2px;
+    margin-bottom: 24px;
+}
+
+.closeButton {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    color: #666;
+}
+
+.dishPreview {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background-color: white;
+    padding: 8px 16px;
+    border: 1px solid #E0E0E0;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    width: fit-content;
+    max-width: 100%;
+    /* Shadow similar to the app's dish style if needed, but image shows clean white card look or just the item itself */
+    /* The image shows it looks exactly like the dish tile in the list. */
+}
+
+.dishImage {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.dishName {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+.actions {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 12px;
+}
+
+.primaryActions {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+}
+
+.actionButton {
+    /* width: 100%;  <-- Remove this or override it. Actually if I keep it, it's fine for Remove button. */
+    width: 100%;
+    padding: 16px;
+    border: 1px solid #E0E0E0;
+    border-radius: 50px;
+    /* Pill shape fully rounded */
+    background: white;
+    font-size: 16px;
+    font-weight: 700;
+    /* Bold as per image usually */
+    color: #333;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    text-align: center;
+}
+
+.actionButton:active {
+    background-color: #f5f5f5;
+}
+
+.removeButton {
+    color: #FF3B30;
+    border-color: #FF3B30;
+    /* Or keep gray border? Image shows white with red text */
+    border: 1px solid #E0E0E0;
+    /* Keeping consistent border */
+}

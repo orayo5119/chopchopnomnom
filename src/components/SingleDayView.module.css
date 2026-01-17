@@ -1,0 +1,433 @@
+.singleDayContainer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 10000;
+    background-color: #F7F7F7;
+    /* Requested Background */
+    /* Clean white bg covering everything */
+    display: flex;
+    flex-direction: column;
+    /* Stack header and body */
+    align-items: center;
+    /* Center children horizontally */
+    /* Remove padding-top, letting topStrip sit at 0 */
+    overflow: hidden;
+    /* GLOBAL SAFETY: Prevent any page scroll */
+}
+
+/* Close Button Area */
+/* Close Button Area */
+.closeRow {
+    width: 100%;
+    height: 56px;
+    /* Fixed height per spec */
+    padding: 0 16px;
+    /* Keep horizontal padding */
+    display: flex;
+    justify-content: flex-end;
+    /* Align to right */
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.closeButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+    transition: background-color 0.2s;
+}
+
+.closeButton:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Video Player Area */
+/* Video Player Area */
+.videoContainer {
+    width: 100%;
+    /* 
+       Logic: (Screen - Header - CloseRow) * 0.9 
+       Header = 10vh
+       CloseRow = 56px
+    */
+    height: calc((100vh - 10vh - 56px) * 0.9);
+
+    padding: 0;
+    padding-left: 16px;
+    /* Left margin 16px per diagram */
+    padding-right: 16px;
+    /* Assumption: Maintain center balance if flexible, or strictly left-aligned? 
+                            If I use justify-content: flex-start + margin-left 16px, it works. 
+                            If I use center + padding-left, it's safer. */
+
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    /* Top align */
+    box-sizing: border-box;
+    overflow: visible;
+    /* Need visible for shadow, but content must fit! */
+    /* Hide scrollbar just in case (for Webkit) */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.videoContainer::-webkit-scrollbar {
+    display: none;
+}
+
+/* Multi-Video Container (Horizontal Scroll) */
+.multiVideoContainer {
+    /* Define dimensions for calculation */
+
+    /* Available vertical space in viewport */
+    --available-screen-h: calc(100vh - 10vh - 56px);
+
+    /* Target Dimensions (Requested 322x609) */
+    --target-video-h: 609px;
+    --aspect-ratio: 322 / 609;
+
+    /* We add padding for shadows: Top 40px, Bottom 60px = 100px total */
+    --padding-v: 100px;
+
+    /* The actual video height: Use target 609px, but shrink if screen is too small */
+    --video-h: min(var(--target-video-h), calc(var(--available-screen-h) - var(--padding-v)));
+
+    /* Calculate width based on specific aspect ratio */
+    --card-w: calc(var(--video-h) * var(--aspect-ratio));
+
+    width: 100%;
+    /* Container height = calculated video height + padding */
+    height: calc(var(--video-h) + var(--padding-v));
+
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    /* Center vertically */
+
+    padding: 0;
+    /* 
+       Centering Padding:
+       We want the center of the first/last card to align with viewport center (50vw).
+       Padding = 50vw - (CardWidth / 2).
+       We subtract an extra ~16px for the frame border buffer to be visuals-perfect.
+    */
+    padding-top: 40px;
+    padding-bottom: 60px;
+    padding-left: calc(50vw - (var(--card-w) / 2) - 16px);
+    padding-right: calc(50vw - (var(--card-w) / 2) - 16px);
+
+    gap: 16px;
+    /* Space between cards */
+
+    overflow-x: auto;
+    /* Enable horizontal scroll */
+    overflow-y: hidden;
+
+    /* Scroll Snap */
+    scroll-snap-type: x mandatory;
+
+    /* Hide scrollbars */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    box-sizing: border-box;
+    /* Ensure padding is included in height */
+}
+
+.multiVideoContainer::-webkit-scrollbar {
+    display: none;
+}
+
+.phoneFrame {
+    height: 100%;
+    /* Fill the calculated container height */
+    width: fit-content;
+    /* Shrink wrap the iframe width */
+    background: black;
+    border-radius: 36px;
+    border: 16px solid white;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    position: relative;
+    max-width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    /* Ensure block formatting context for child */
+    flex-shrink: 0;
+    /* Don't shrink in flex list */
+}
+
+.videoWrapper {
+    height: 100%;
+    position: relative;
+    flex-shrink: 0;
+    scroll-snap-align: center;
+    display: flex;
+    justify-content: center;
+}
+
+.videoTitle {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    color: #888;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 5;
+    pointer-events: none;
+}
+
+.multiVideoContainer {
+    cursor: grab;
+}
+
+.multiVideoContainer:active {
+    cursor: grabbing;
+}
+
+/* Video Card Internals */
+.thumbnail {
+    position: relative;
+    /* Change from absolute to relative to provide structure */
+    top: auto;
+    left: auto;
+    width: auto;
+    /* Allow aspect ratio to drive width */
+    height: 100%;
+    /* Fill frame height */
+    aspect-ratio: 322 / 609;
+    /* Force specific ratio */
+    background-size: cover;
+    background-position: center;
+    z-index: 1;
+}
+
+.playOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.3);
+    /* Darken thumbnail */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.playOverlay:hover {
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.playIcon {
+    width: 64px;
+    height: 64px;
+    color: white;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+}
+
+.iframe {
+    height: 100%;
+    width: auto;
+    /* Let aspect ratio drive width */
+    aspect-ratio: 322 / 609;
+    /* Force spec ratio */
+    border: none;
+    display: block;
+    overflow: hidden;
+    /* Force hide scrollbars */
+}
+
+.videoPlaceholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #eee;
+    color: #888;
+    text-align: center;
+    padding: 20px;
+}
+
+.topStrip {
+    background-color: white;
+    width: 100%;
+    height: 10vh;
+    /* Fixed 10% height per spec */
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* The actual row content wrapper */
+.contentRow {
+    display: flex;
+    align-items: center;
+    /* Vertically center items in the row */
+    width: 100%;
+    max-width: 800px;
+    padding: 0 20px;
+    height: 100%;
+    /* Fill the strip height */
+}
+
+/* Left Column: Date & Day */
+.dateColumn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* Center in fixed height */
+    width: 60px;
+    min-width: 60px;
+}
+
+.dayName {
+    font-size: 16px;
+    font-weight: 700;
+    color: #000;
+    line-height: 1.2;
+}
+
+.date {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.2;
+}
+
+/* Vertical Dotted Line Separator */
+.separator {
+    width: 1px;
+    background-image: linear-gradient(to bottom, #ccc 33%, rgba(255, 255, 255, 0) 0%);
+    background-position: center;
+    background-size: 1px 4px;
+    background-repeat: repeat-y;
+    margin: 0 24px;
+    height: 60%;
+    /* Visual tweak: visually distinct but not touching edges */
+}
+
+/* Right Column: Dish Card ContentWrapper */
+.contentColumn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    height: 100%;
+}
+
+/* Added Header Scroll Wrapper for shadowing */
+.headerScrollWrapper {
+    flex: 1;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+    /* Fill parent */
+    align-items: center;
+}
+
+.headerScrollShadow {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0px;
+    width: 12px;
+    background: linear-gradient(90deg, #EAEAEA 0%, rgba(255, 255, 255, 0) 100%);
+    pointer-events: none;
+    transition: opacity 0.3s;
+    z-index: 2;
+    opacity: 0;
+    filter: blur(3px);
+}
+
+.headerScrollShadow.visible {
+    opacity: 1;
+}
+
+/* Right Column: Key Dish Chips */
+.headerDishList {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    overflow-x: auto;
+    /* Allow scrolling if many dishes */
+    scrollbar-width: none;
+    /* Hide scrollbar */
+    -ms-overflow-style: none;
+    padding-right: 20px;
+    /* End padding for scroll */
+    padding-top: 4px;
+    padding-bottom: 4px;
+    /* Touch target buffer */
+    cursor: grab;
+    /* Enable grab cursor */
+    height: 100%;
+    /* Ensure full height for better drag target? No, better fit content.*/
+}
+
+.headerDishList:active {
+    cursor: grabbing;
+}
+
+
+.headerDishList::-webkit-scrollbar {
+    display: none;
+}
+
+.headerChip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 6px 12px 6px 6px;
+    /* Tighter padding, specifically left */
+    height: 36px;
+    /* Fixed height for consistency */
+    white-space: nowrap;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    flex-shrink: 0;
+    /* Don't squash */
+    user-select: none;
+    /* Prevent text selection while dragging */
+}
+
+.headerChipIcon {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    background-size: cover;
+    background-position: center;
+    background-color: #eee;
+    flex-shrink: 0;
+}
+
+.headerChipText {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}

@@ -1,0 +1,98 @@
+.planner {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    height: 100%;
+    position: relative;
+    /* Ensure absolute positioning works for children */
+}
+
+.weekHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+    /* Horizontal padding */
+    height: 60px;
+    /* Fixed height */
+    background-color: white;
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 600;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+    flex-shrink: 0;
+    box-sizing: border-box;
+}
+
+.navButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: inherit;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.navButton:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.weekViewContainer {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+}
+
+.daysList {
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 85%;
+    /* Strict 85% height */
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.noteWrapper {
+    flex: 0 0 15%;
+    /* Strict 15% height */
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+
+.emptyState {
+    padding: 16px;
+    text-align: center;
+    color: var(--text-secondary);
+    background-color: #fff3e0;
+    font-size: 14px;
+}
+
+.toast {
+    position: absolute;
+    bottom: 48px;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    width: fit-content;
+    background-color: #323232;
+    color: white;
+    padding: 10px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+    white-space: nowrap;
+}

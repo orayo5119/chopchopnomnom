@@ -1,8 +1,5 @@
 import { NextResponse } from "next/server";
 
-export const runtime = 'edge';
-export const dynamic = 'force-dynamic';
-
 export async function GET() {
-    return NextResponse.json({ message: "pong (edge)", time: new Date().toISOString() });
+    return NextResponse.json({ message: "pong", time: new Date().toISOString() });
 }

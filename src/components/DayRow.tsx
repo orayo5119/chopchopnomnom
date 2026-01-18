@@ -108,8 +108,12 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
         }
     };
 
+    // Track internal drag state for z-index
+    const [isInternalDragging, setIsInternalDragging] = useState(false);
+
     const handleItemDragStart = () => {
         isDraggingRef.current = true;
+        setIsInternalDragging(true);
         if (longPressTimer.current) {
             clearTimeout(longPressTimer.current);
             longPressTimer.current = null;
@@ -117,6 +121,7 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
     };
 
     const handleItemDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: any, dish: any) => {
+        setIsInternalDragging(false);
         // Reset dragging status with a small delay to prevent onClick from firing immediately after drag
         setTimeout(() => {
             isDraggingRef.current = false;
@@ -185,6 +190,10 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
             onClick={handleRowClick}
             data-day-row="true"
             data-date={date.toISOString()}
+            style={{
+                zIndex: isInternalDragging ? 999 : 1,
+                position: 'relative'
+            }}
         >
             <div className={styles.header}>
                 <span className={`${styles.dayName} ${dayName === "Sun" ? styles.sundayText : ""}`}>{dayName}</span>
@@ -202,7 +211,10 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
                     onMouseLeave={handleMouseLeave}
                     onMouseUp={handleMouseUp}
                     onMouseMove={handleMouseMove}
-                    style={{ cursor: isDown ? 'grabbing' : 'grab' }}
+                    style={{
+                        cursor: isDown ? 'grabbing' : 'grab',
+                        overflow: isInternalDragging ? 'visible' : undefined
+                    }}
                 >
                     {isSelected ? (
                         <button className={styles.pasteButton} onClick={(e) => {
@@ -237,6 +249,7 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
                                     layoutId={layoutId} // Framer Reorder uses layoutId for position
                                     onClick={() => handleDishClick(dish, layoutId)}
                                     // Drag end handler for cross-day
+                                    drag
                                     onDragStart={handleItemDragStart}
                                     onDragEnd={(event, info) => handleItemDragEnd(event, info, dish)}
 

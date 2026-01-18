@@ -3,7 +3,7 @@ import "./globals.css";
 // Global styles imported above
 
 export const metadata: Metadata = {
-  title: "Cooking Planner",
+  title: "ChopChopNomNom",
   description: "Plan your weekly meals",
 };
 

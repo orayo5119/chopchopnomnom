@@ -16,7 +16,7 @@ export default function LoginPage() {
     return (
         <div className={styles.container}>
             <div className={styles.card}>
-                <h1 className={styles.title}>Cooking Planner</h1>
+                <h1 className={styles.title}>ChopChopNomNom</h1>
                 <div className={styles.circle}></div>
                 <button
                     className={styles.googleButton}

@@ -8,7 +8,7 @@ interface HeaderProps {
 export default function Header({ user }: HeaderProps) {
     return (
         <header className={styles.header}>
-            <h1 className={styles.title}>Cooking Planner</h1>
+            <h1 className={styles.title}>ChopChopNomNom</h1>
             <div className={styles.profile}>
                 {user?.image ? (
                     <img src={user.image} alt={user.name || "User"} className={styles.avatar} />

@@ -52,7 +52,7 @@
     flex: 1;
     display: flex;
     position: relative;
-    overflow: hidden;
+    /* overflow: hidden; removed to allow drag */
 }
 
 .scrollShadow {
@@ -82,7 +82,7 @@
     align-content: center;
     padding: 16px;
     overflow-x: auto;
-    overflow-y: hidden;
+    overflow-y: visible;
     scrollbar-width: none;
     /* Firefox */
     -ms-overflow-style: none;

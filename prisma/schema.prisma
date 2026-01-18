@@ -1,7 +1,7 @@
 datasource db {
   provider = "postgresql"
-  url = env("PRISMA_DATABASE_URL") // Connection pooling (Prisma Accelerate)
-  directUrl = env("POSTGRES_URL") // Direct connection
+  url = env("POSTGRES_URL") // Fallback to standard connection
+  directUrl = env("POSTGRES_URL")
 }
 
 generator client {

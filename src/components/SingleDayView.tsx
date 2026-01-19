@@ -379,9 +379,10 @@ function getEmbedUrl(url: string): string {
         }
         // TikTok
         else if (url.includes("tiktok.com")) {
-            const parts = url.split("/");
-            const videoId = parts[parts.length - 1].split("?")[0];
-            finalUrl = `https://www.tiktok.com/player/v1/${videoId}`;
+            const parts = url.split("/").filter(Boolean); // Remove empty strings from trailing slashes
+            const lastPart = parts[parts.length - 1];
+            const videoId = lastPart.split("?")[0];
+            finalUrl = `https://www.tiktok.com/embed/v2/${videoId}`;
         }
         // Instagram
         else if (url.includes("instagram.com/reel")) {

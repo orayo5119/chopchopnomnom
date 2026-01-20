@@ -283,14 +283,12 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
                                     key={dish.id || idx}
                                     value={dish}
                                     className={styles.dish}
-                                    layoutId={layoutId} // Framer Reorder uses layoutId for position
+                                    layoutId={layoutId}
                                     onClick={() => handleDishClick(dish, layoutId)}
-                                    // Drag end handler for cross-day
                                     drag
                                     onDragStart={handleItemDragStart}
                                     onDrag={handleItemDragMove}
                                     onDragEnd={(event, info) => handleItemDragEnd(event, info, dish)}
-
                                     // Long press
                                     onTouchStart={() => handleTouchStart(dish)}
                                     onTouchEnd={handleTouchEnd}
@@ -300,12 +298,12 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
                                     onContextMenu={(e: React.MouseEvent) => {
                                         if (onDishLongPress) e.preventDefault();
                                     }}
-
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.98 }}
-                                    // Ensure it doesn't default to li
                                     as="button"
-                                // Remove native draggable
+                                    style={{
+                                        pointerEvents: isInternalDragging ? 'none' : 'auto'
+                                    }}
                                 >
                                     {dish.image && (
                                         <img
@@ -324,9 +322,11 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
                                 </Reorder.Item>
                             );
                         })}
+                        );
+                        })}
                     </Reorder.Group>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

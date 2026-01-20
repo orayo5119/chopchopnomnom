@@ -203,6 +203,7 @@
     padding-left: 20px;
     /* Some padding */
     z-index: 10;
+    pointer-events: none;
     font-weight: 600;
     color: #000;
     font-size: 14px;

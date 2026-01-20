@@ -41,6 +41,15 @@ export default function Planner() {
     const [clipboardDish, setClipboardDish] = useState<Dish | null>(null);
     const [showPasteToast, setShowPasteToast] = useState(false);
 
+    // Debug Session
+    const [session, setSession] = useState<any>(null);
+
+    useEffect(() => {
+        fetch("/api/auth/session")
+            .then(res => res.json())
+            .then(data => setSession(data));
+    }, []);
+
     // Fetch initial dishes
     useEffect(() => {
         async function fetchDishes() {
@@ -355,6 +364,7 @@ export default function Planner() {
                 dish={contextDish}
             />
 
+
             <AnimatePresence>
                 {showPasteToast && (
                     <motion.div
@@ -368,6 +378,23 @@ export default function Planner() {
                 )}
             </AnimatePresence>
 
+            <div style={{
+                position: 'fixed',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                background: 'rgba(0,0,0,0.8)',
+                color: '#fff',
+                fontSize: '10px',
+                padding: '4px',
+                textAlign: 'center',
+                zIndex: 9999,
+                pointerEvents: 'none'
+            }}>
+                DEBUG: {session?.user?.email || 'No Email'} (ID: {(session?.user as any)?.id || 'No ID'})
+            </div>
+
         </div>
     );
 }
+

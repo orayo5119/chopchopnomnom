@@ -134,32 +134,38 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
         for (let i = 0; i < rows.length; i++) {
             const row = rows[i] as HTMLElement;
             const rect = row.getBoundingClientRect();
-            if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
+            // Convert viewport rect to page coordinates
+            const top = rect.top + window.scrollY;
+            const bottom = rect.bottom + window.scrollY;
+            const left = rect.left + window.scrollX;
+            const right = rect.right + window.scrollX;
+
+            if (x >= left && x <= right && y >= top && y <= bottom) {
                 return row;
             }
         }
         return null;
     };
 
-    const getClientPoint = (event: MouseEvent | TouchEvent | PointerEvent) => {
-        let clientX, clientY;
+    const getPagePoint = (event: MouseEvent | TouchEvent | PointerEvent) => {
+        let pageX, pageY;
         if ((event as any).touches && (event as any).touches.length > 0) {
-            clientX = (event as any).touches[0].clientX;
-            clientY = (event as any).touches[0].clientY;
+            pageX = (event as any).touches[0].pageX;
+            pageY = (event as any).touches[0].pageY;
         } else if ((event as any).changedTouches && (event as any).changedTouches.length > 0) {
-            clientX = (event as any).changedTouches[0].clientX;
-            clientY = (event as any).changedTouches[0].clientY;
+            pageX = (event as any).changedTouches[0].pageX;
+            pageY = (event as any).changedTouches[0].pageY;
         } else {
-            clientX = (event as any).clientX;
-            clientY = (event as any).clientY;
+            pageX = (event as any).pageX;
+            pageY = (event as any).pageY;
         }
-        return { x: clientX, y: clientY };
+        return { x: pageX, y: pageY };
     }
 
     const handleItemDragMove = (event: MouseEvent | TouchEvent | PointerEvent, info: any) => {
         if (!onDragOverChange) return;
 
-        const { x, y } = getClientPoint(event);
+        const { x, y } = getPagePoint(event);
         // Use geometry check instead of elementsFromPoint to avoid z-index blocking
         const targetRow = findDayRowFromPoint(x, y);
 
@@ -184,7 +190,7 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
         }, 100);
 
         // Check if dropped on another day
-        const { x, y } = getClientPoint(event);
+        const { x, y } = getPagePoint(event);
 
         // Use consistent geometry check
         const targetRow = findDayRowFromPoint(x, y);

@@ -129,12 +129,39 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
         }
     };
 
+    const findDayRowFromPoint = (x: number, y: number) => {
+        const rows = document.querySelectorAll('[data-day-row="true"]');
+        for (let i = 0; i < rows.length; i++) {
+            const row = rows[i] as HTMLElement;
+            const rect = row.getBoundingClientRect();
+            if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
+                return row;
+            }
+        }
+        return null;
+    };
+
+    const getClientPoint = (event: MouseEvent | TouchEvent | PointerEvent) => {
+        let clientX, clientY;
+        if ((event as any).touches && (event as any).touches.length > 0) {
+            clientX = (event as any).touches[0].clientX;
+            clientY = (event as any).touches[0].clientY;
+        } else if ((event as any).changedTouches && (event as any).changedTouches.length > 0) {
+            clientX = (event as any).changedTouches[0].clientX;
+            clientY = (event as any).changedTouches[0].clientY;
+        } else {
+            clientX = (event as any).clientX;
+            clientY = (event as any).clientY;
+        }
+        return { x: clientX, y: clientY };
+    }
+
     const handleItemDragMove = (event: MouseEvent | TouchEvent | PointerEvent, info: any) => {
         if (!onDragOverChange) return;
 
-        const point = info.point;
-        const elements = document.elementsFromPoint(point.x, point.y);
-        const targetRow = elements.find(el => el.hasAttribute('data-day-row'));
+        const { x, y } = getClientPoint(event);
+        // Use geometry check instead of elementsFromPoint to avoid z-index blocking
+        const targetRow = findDayRowFromPoint(x, y);
 
         if (targetRow) {
             const targetDateStr = targetRow.getAttribute('data-date');
@@ -157,16 +184,10 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
         }, 100);
 
         // Check if dropped on another day
-        // We use client coordinates
-        // MouseEvent/PointerEvent has clientX/Y.
-        // info.point.x/y provided by framer
-        const point = info.point;
+        const { x, y } = getClientPoint(event);
 
-        // Hide the dragged element momentarily to find what's underneath?
-        // Or assume elementFromPoint works.
-        // Elements from point is safer
-        const elements = document.elementsFromPoint(point.x, point.y);
-        const targetRow = elements.find(el => el.hasAttribute('data-day-row'));
+        // Use consistent geometry check
+        const targetRow = findDayRowFromPoint(x, y);
 
         if (targetRow) {
             const targetDateStr = targetRow.getAttribute('data-date');
@@ -321,8 +342,6 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
                                     </motion.span>
                                 </Reorder.Item>
                             );
-                        })}
-                        );
                         })}
                     </Reorder.Group>
                 </div>

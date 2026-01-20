@@ -41,30 +41,45 @@ export default function Planner() {
     const [clipboardDish, setClipboardDish] = useState<Dish | null>(null);
     const [showPasteToast, setShowPasteToast] = useState(false);
 
-    // Debug Session
-    const [session, setSession] = useState<any>(null);
+    // Auto-Update State
+    const [showUpdateToast, setShowUpdateToast] = useState(false);
 
+    // Initial Fetch
     useEffect(() => {
-        fetch("/api/auth/session")
-            .then(res => res.json())
-            .then(data => setSession(data));
-    }, []);
-
-    // Fetch initial dishes
-    useEffect(() => {
-        async function fetchDishes() {
-            try {
-                const res = await fetch("/api/dishes");
-                if (res.ok) {
-                    const data = await res.json();
-                    setDishes(data);
-                }
-            } catch (e) {
-                console.error("Failed to fetch dishes", e);
-            }
-        }
         fetchDishes();
     }, []);
+
+    // Polling for updates
+    useEffect(() => {
+        const interval = setInterval(() => {
+            fetchDishes(true);
+        }, 10000); // 10 seconds
+
+        return () => clearInterval(interval);
+    }, [dishes]); // Depend on dishes to compare
+
+    async function fetchDishes(isPolling = false) {
+        try {
+            const res = await fetch("/api/dishes");
+            if (res.ok) {
+                const data = await res.json();
+
+                if (isPolling) {
+                    // Check for changes (Simple JSON comparison)
+                    // Note: This relies on deterministic order which API ensures (date asc, order asc)
+                    if (JSON.stringify(data) !== JSON.stringify(dishes)) {
+                        setDishes(data);
+                        setShowUpdateToast(true);
+                        setTimeout(() => setShowUpdateToast(false), 3000);
+                    }
+                } else {
+                    setDishes(data);
+                }
+            }
+        } catch (e) {
+            console.error("Failed to fetch dishes", e);
+        }
+    }
 
     // Generate 7 days start from Monday of current week
     const weekDays = useMemo(() => {
@@ -378,23 +393,23 @@ export default function Planner() {
                 )}
             </AnimatePresence>
 
-            <div style={{
-                position: 'fixed',
-                bottom: 0,
-                left: 0,
-                right: 0,
-                background: 'rgba(0,0,0,0.8)',
-                color: '#fff',
-                fontSize: '10px',
-                padding: '4px',
-                textAlign: 'center',
-                zIndex: 9999,
-                pointerEvents: 'none'
-            }}>
-                DEBUG: {session?.user?.email || 'No Email'} (ID: {(session?.user as any)?.id || 'No ID'})
-            </div>
+            <AnimatePresence>
+                {showUpdateToast && (
+                    <motion.div
+                        className={styles.toast}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 20 }}
+                        key="update-toast"
+                    >
+                        Page updated
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
         </div>
+
+
     );
 }
 

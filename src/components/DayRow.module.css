@@ -13,6 +13,11 @@
     /* Orange outline */
 }
 
+.row.dragTarget {
+    background-color: #fffbf5;
+    box-shadow: inset 0 0 0 2px var(--primary-orange);
+}
+
 .header {
     display: flex;
     flex-direction: column;
@@ -25,6 +30,9 @@
     padding: 16px;
     position: relative;
     /* border-right removed in favor of pseudo-element */
+    z-index: 11;
+    /* Ensure header stays above overlay? Or beside it. */
+    background: inherit;
 }
 
 .header::after {
@@ -177,4 +185,25 @@
 
 .sundayText {
     color: #F71212;
+}
+
+.dropZoneOverlay {
+    position: absolute;
+    top: 0;
+    left: 80px;
+    /* Offset by header width */
+    right: 0;
+    bottom: 0;
+    background-color: #FFF59D;
+    /* Light Yellow */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Center horizontally */
+    padding-left: 20px;
+    /* Some padding */
+    z-index: 10;
+    font-weight: 600;
+    color: #000;
+    font-size: 14px;
 }

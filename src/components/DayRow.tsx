@@ -16,9 +16,11 @@ interface DayRowProps {
     isSelected?: boolean;
     onSelect?: () => void;
     onReorder?: (newDishes: any[]) => void;
+    isDragTarget?: boolean;
+    onDragOverChange?: (date: Date | null) => void;
 }
 
-export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishClick, onMoveDish, onDishLongPress, isSelected, onSelect, onReorder }: DayRowProps) {
+export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishClick, onMoveDish, onDishLongPress, isSelected, onSelect, onReorder, isDragTarget, onDragOverChange }: DayRowProps) {
     const formattedDate = date.toLocaleDateString("en-US", { month: "numeric", day: "numeric" });
     const sliderRef = useRef<HTMLDivElement>(null);
     const [isDown, setIsDown] = useState(false);
@@ -108,11 +110,18 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
         }
     };
 
-    // Track internal drag state for z-index
+    // Track internal drag state for z-index and overflow
     const [isInternalDragging, setIsInternalDragging] = useState(false);
+    const [containerSize, setContainerSize] = useState<{ width: number; height: number } | null>(null);
 
     const handleItemDragStart = () => {
         isDraggingRef.current = true;
+        if (sliderRef.current) {
+            setContainerSize({
+                width: sliderRef.current.offsetWidth,
+                height: sliderRef.current.offsetHeight
+            });
+        }
         setIsInternalDragging(true);
         if (longPressTimer.current) {
             clearTimeout(longPressTimer.current);
@@ -120,8 +129,28 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
         }
     };
 
+    const handleItemDragMove = (event: MouseEvent | TouchEvent | PointerEvent, info: any) => {
+        if (!onDragOverChange) return;
+
+        const point = info.point;
+        const elements = document.elementsFromPoint(point.x, point.y);
+        const targetRow = elements.find(el => el.hasAttribute('data-day-row'));
+
+        if (targetRow) {
+            const targetDateStr = targetRow.getAttribute('data-date');
+            if (targetDateStr) {
+                onDragOverChange(new Date(targetDateStr));
+            }
+        } else {
+            onDragOverChange(null);
+        }
+    };
+
     const handleItemDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: any, dish: any) => {
         setIsInternalDragging(false);
+        setContainerSize(null);
+        if (onDragOverChange) onDragOverChange(null);
+
         // Reset dragging status with a small delay to prevent onClick from firing immediately after drag
         setTimeout(() => {
             isDraggingRef.current = false;
@@ -183,7 +212,7 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
 
     return (
         <div
-            className={`${styles.row} ${isDragOver ? styles.dragOver : ""} ${isSelected ? styles.selected : ""}`}
+            className={`${styles.row} ${isDragOver ? styles.dragOver : ""} ${isSelected ? styles.selected : ""} ${isDragTarget ? styles.dragTarget : ""}`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
@@ -200,6 +229,11 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
                 <span className={styles.date}>{formattedDate}</span>
             </div>
             <div className={styles.scrollWrapper}>
+                {isDragTarget && (
+                    <div className={styles.dropZoneOverlay}>
+                        + Drop zone for {dayName}
+                    </div>
+                )}
                 <div
                     className={`${styles.scrollShadow} ${showShadow ? styles.visible : ""}`}
                 />
@@ -213,7 +247,10 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
                     onMouseMove={handleMouseMove}
                     style={{
                         cursor: isDown ? 'grabbing' : 'grab',
-                        overflow: isInternalDragging ? 'visible' : undefined
+                        overflow: isInternalDragging ? 'visible' : undefined,
+                        width: containerSize ? containerSize.width : undefined,
+                        height: containerSize ? containerSize.height : undefined,
+                        flexGrow: containerSize ? 0 : 1 // Prevent flex from overriding width if needed
                     }}
                 >
                     {isSelected ? (
@@ -251,6 +288,7 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
                                     // Drag end handler for cross-day
                                     drag
                                     onDragStart={handleItemDragStart}
+                                    onDrag={handleItemDragMove}
                                     onDragEnd={(event, info) => handleItemDragEnd(event, info, dish)}
 
                                     // Long press

@@ -117,6 +117,13 @@ export default function Planner() {
 
     const [selectedPasteDate, setSelectedPasteDate] = useState<Date | null>(null);
 
+    // Drag Target Feedback
+    const [dragTargetDate, setDragTargetDate] = useState<Date | null>(null);
+
+    const handleDragOverDay = (date: Date | null) => {
+        setDragTargetDate(date);
+    };
+
     const handleAddDish = (date: Date) => {
         if (clipboardDish && showPasteToast) {
             // Paste Logic
@@ -344,6 +351,8 @@ export default function Planner() {
                                         setSelectedPasteDate(date);
                                     }
                                 }}
+                                isDragTarget={!!(dragTargetDate && dragTargetDate.toDateString() === date.toDateString())}
+                                onDragOverChange={handleDragOverDay}
                             />
                         ))}
 

@@ -129,7 +129,7 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
         }
     };
 
-    const SNAP_DISTANCE = 32;
+    const SNAP_BUFFER = 32;
 
     const findClosestDayRow = (y: number) => {
         const rows = document.querySelectorAll('[data-day-row="true"]');
@@ -140,20 +140,23 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
         for (const row of Array.from(rows) as HTMLElement[]) {
             const rect = row.getBoundingClientRect();
             // Calculate center Y relative to viewport, then adjust to page coordinates if needed.
-            // Since our y input comes from getPagePoint (pageX/Y), we should also convert rect to page coords.
             const rowCenterY = rect.top + window.scrollY + rect.height / 2;
-            const distance = Math.abs(y - rowCenterY);
+            const halfHeight = rect.height / 2;
+            const distanceToCenter = Math.abs(y - rowCenterY);
 
-            if (distance < minDistance) {
-                minDistance = distance;
-                closestRow = row;
+            // Check if within (Row Height/2 + Buffer)
+            // This covers being inside the row OR within SNAP_BUFFER of top/bottom edge
+            if (distanceToCenter < halfHeight + SNAP_BUFFER) {
+                // We are in the "active zone" for this row.
+                // If we have multiple overlapping active zones (e.g. adjacent rows), pick the one we are centrally closest to.
+                if (distanceToCenter < minDistance) {
+                    minDistance = distanceToCenter;
+                    closestRow = row;
+                }
             }
         }
 
-        if (closestRow && minDistance < SNAP_DISTANCE) {
-            return closestRow;
-        }
-        return null;
+        return closestRow;
     };
 
     const getPagePoint = (event: MouseEvent | TouchEvent | PointerEvent) => {

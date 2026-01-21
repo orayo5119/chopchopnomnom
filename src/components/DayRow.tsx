@@ -81,6 +81,7 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
     // Drag and Drop Handlers (Native HTML5 for receiving external drops, if needed)
     const [isDragOver, setIsDragOver] = useState(false);
     const isDraggingRef = useRef(false);
+    const activeDragElementRef = useRef<HTMLElement | null>(null);
 
     const handleDragOver = (e: React.DragEvent) => {
         e.preventDefault(); // Allow drop
@@ -114,8 +115,14 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
     const [isInternalDragging, setIsInternalDragging] = useState(false);
     const [containerSize, setContainerSize] = useState<{ width: number; height: number } | null>(null);
 
-    const handleItemDragStart = () => {
+    const dragOffsetY = useRef(0);
+
+    const handleItemDragStart = (event: any) => {
         isDraggingRef.current = true;
+        // Capture the dragged element (the button)
+        const target = event.target as HTMLElement;
+        activeDragElementRef.current = target.closest('button') || target;
+
         if (sliderRef.current) {
             setContainerSize({
                 width: sliderRef.current.offsetWidth,
@@ -123,13 +130,23 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
             });
         }
         setIsInternalDragging(true);
+
+        // Calculate initial offset between Pointer and Card Center
+        // This ensures the logic uses the "Visual Card Center" regardless of where the user grabbed it
+        const { y: pointerY } = getPagePoint(event);
+        if (activeDragElementRef.current) {
+            const rect = activeDragElementRef.current.getBoundingClientRect();
+            const cardCenterY = rect.top + window.scrollY + rect.height / 2;
+            dragOffsetY.current = cardCenterY - pointerY;
+        }
+
         if (longPressTimer.current) {
             clearTimeout(longPressTimer.current);
             longPressTimer.current = null;
         }
     };
 
-    const SNAP_THRESHOLD = 48; // px
+    const SNAP_THRESHOLD = 56; // px
 
     const findClosestDayRow = (y: number) => {
         const rows = document.querySelectorAll('[data-day-row="true"]');
@@ -174,8 +191,12 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
     const handleItemDragMove = (event: MouseEvent | TouchEvent | PointerEvent, info: any) => {
         if (!onDragOverChange) return;
 
-        const { x, y } = getPagePoint(event);
-        const targetRow = findClosestDayRow(y);
+        // Calculate Dragged Card Center using Pointer + Offset
+        // This avoids layout projection issues with getBoundingClientRect() during drag
+        const { y: pointerY } = getPagePoint(event);
+        const cardCenterY = pointerY + dragOffsetY.current;
+
+        const targetRow = findClosestDayRow(cardCenterY);
 
         if (targetRow) {
             const targetDateStr = targetRow.getAttribute('data-date');
@@ -197,10 +218,14 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
             isDraggingRef.current = false;
         }, 100);
 
-        // Check if dropped on another day
-        const { x, y } = getPagePoint(event);
+        // Cleanup
+        activeDragElementRef.current = null;
 
-        const targetRow = findClosestDayRow(y);
+        // Check if dropped on another day using Card Center
+        const { y: pointerY } = getPagePoint(event);
+        const cardCenterY = pointerY + dragOffsetY.current;
+
+        const targetRow = findClosestDayRow(cardCenterY);
 
         if (targetRow) {
             const targetDateStr = targetRow.getAttribute('data-date');

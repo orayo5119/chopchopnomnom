@@ -129,20 +129,29 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
         }
     };
 
-    const findDayRowFromPoint = (x: number, y: number) => {
-        const rows = document.querySelectorAll('[data-day-row="true"]');
-        for (let i = 0; i < rows.length; i++) {
-            const row = rows[i] as HTMLElement;
-            const rect = row.getBoundingClientRect();
-            // Convert viewport rect to page coordinates
-            const top = rect.top + window.scrollY;
-            const bottom = rect.bottom + window.scrollY;
-            const left = rect.left + window.scrollX;
-            const right = rect.right + window.scrollX;
+    const SNAP_DISTANCE = 32;
 
-            if (x >= left && x <= right && y >= top && y <= bottom) {
-                return row;
+    const findClosestDayRow = (y: number) => {
+        const rows = document.querySelectorAll('[data-day-row="true"]');
+        let closestRow: HTMLElement | null = null;
+        let minDistance = Infinity;
+
+        // Use a for...of loop for slightly better readability/performance than forEach with querySelectorAll
+        for (const row of Array.from(rows) as HTMLElement[]) {
+            const rect = row.getBoundingClientRect();
+            // Calculate center Y relative to viewport, then adjust to page coordinates if needed.
+            // Since our y input comes from getPagePoint (pageX/Y), we should also convert rect to page coords.
+            const rowCenterY = rect.top + window.scrollY + rect.height / 2;
+            const distance = Math.abs(y - rowCenterY);
+
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestRow = row;
             }
+        }
+
+        if (closestRow && minDistance < SNAP_DISTANCE) {
+            return closestRow;
         }
         return null;
     };
@@ -166,8 +175,7 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
         if (!onDragOverChange) return;
 
         const { x, y } = getPagePoint(event);
-        // Use geometry check instead of elementsFromPoint to avoid z-index blocking
-        const targetRow = findDayRowFromPoint(x, y);
+        const targetRow = findClosestDayRow(y);
 
         if (targetRow) {
             const targetDateStr = targetRow.getAttribute('data-date');
@@ -192,8 +200,7 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
         // Check if dropped on another day
         const { x, y } = getPagePoint(event);
 
-        // Use consistent geometry check
-        const targetRow = findDayRowFromPoint(x, y);
+        const targetRow = findClosestDayRow(y);
 
         if (targetRow) {
             const targetDateStr = targetRow.getAttribute('data-date');
@@ -327,6 +334,7 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
                                     }}
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.98 }}
+                                    whileDrag={{ scale: 0.98 }}
                                     as="button"
                                     style={{
                                         pointerEvents: isInternalDragging ? 'none' : 'auto'

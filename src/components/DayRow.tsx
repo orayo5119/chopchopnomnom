@@ -129,34 +129,31 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
         }
     };
 
-    const SNAP_BUFFER = 32;
+    const SNAP_THRESHOLD = 48; // px
 
     const findClosestDayRow = (y: number) => {
         const rows = document.querySelectorAll('[data-day-row="true"]');
         let closestRow: HTMLElement | null = null;
         let minDistance = Infinity;
 
-        // Use a for...of loop for slightly better readability/performance than forEach with querySelectorAll
+        // Iterate all rows to find the absolute closest one first
         for (const row of Array.from(rows) as HTMLElement[]) {
             const rect = row.getBoundingClientRect();
-            // Calculate center Y relative to viewport, then adjust to page coordinates if needed.
+            // Core Principle: Use page/document coordinates
             const rowCenterY = rect.top + window.scrollY + rect.height / 2;
-            const halfHeight = rect.height / 2;
-            const distanceToCenter = Math.abs(y - rowCenterY);
+            const distance = Math.abs(y - rowCenterY);
 
-            // Check if within (Row Height/2 + Buffer)
-            // This covers being inside the row OR within SNAP_BUFFER of top/bottom edge
-            if (distanceToCenter < halfHeight + SNAP_BUFFER) {
-                // We are in the "active zone" for this row.
-                // If we have multiple overlapping active zones (e.g. adjacent rows), pick the one we are centrally closest to.
-                if (distanceToCenter < minDistance) {
-                    minDistance = distanceToCenter;
-                    closestRow = row;
-                }
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestRow = row;
             }
         }
 
-        return closestRow;
+        // Acceptance Criteria: Valid only if within SNAP_THRESHOLD
+        if (closestRow && minDistance <= SNAP_THRESHOLD) {
+            return closestRow;
+        }
+        return null;
     };
 
     const getPagePoint = (event: MouseEvent | TouchEvent | PointerEvent) => {

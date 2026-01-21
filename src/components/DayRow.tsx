@@ -258,7 +258,7 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
             <div className={styles.scrollWrapper}>
                 {isDragTarget && (
                     <div className={styles.dropZoneOverlay}>
-                        + Drop zone for {dayName}
+                        Drop here
                     </div>
                 )}
                 <div

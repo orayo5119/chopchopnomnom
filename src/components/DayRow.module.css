@@ -190,12 +190,10 @@
 .dropZoneOverlay {
     position: absolute;
     top: 0;
-    left: 80px;
-    /* Offset by header width */
+    left: 0;
     right: 0;
     bottom: 0;
-    background-color: #FFF59D;
-    /* Light Yellow */
+    background-color: rgba(15, 119, 194, 0.7);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -205,6 +203,6 @@
     z-index: 10;
     pointer-events: none;
     font-weight: 600;
-    color: #000;
-    font-size: 14px;
+    color: white;
+    font-size: 16px;
 }

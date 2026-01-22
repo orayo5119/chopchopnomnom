@@ -3,6 +3,8 @@
   /* Mobile focused max width */
   margin: 0 auto;
   height: 100vh;
+  height: 100dvh;
+  /* Fallback will be handled by browser if not supported, but most do. Layout needs to fit visible area. */
   display: flex;
   flex-direction: column;
   overflow: hidden;

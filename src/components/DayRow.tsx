@@ -119,34 +119,6 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
 
 
 
-    const SNAP_THRESHOLD = 56; // px
-
-    const findClosestDayRow = (y: number) => {
-        const rows = document.querySelectorAll('[data-day-row="true"]');
-        let closestRow: HTMLElement | null = null;
-        let minDistance = Infinity;
-
-        // Iterate all rows to find the absolute closest one first
-        for (const row of Array.from(rows) as HTMLElement[]) {
-            const rect = row.getBoundingClientRect();
-            // Core Principle: Use Viewport/Client coordinates (rect.top is relative to viewport)
-            const rowCenterY = rect.top + rect.height / 2;
-            const distance = Math.abs(y - rowCenterY);
-
-            if (distance < minDistance) {
-                minDistance = distance;
-                closestRow = row;
-            }
-        }
-
-        // Acceptance Criteria: Valid only if within SNAP_THRESHOLD
-        // Increase threshold slightly for touch precision if needed
-        if (closestRow && minDistance <= SNAP_THRESHOLD) {
-            return closestRow;
-        }
-        return null;
-    };
-
     const getClientPoint = (event: MouseEvent | TouchEvent | PointerEvent) => {
         let clientX, clientY;
         if ((event as any).touches && (event as any).touches.length > 0) {
@@ -195,12 +167,13 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
     const handleItemDragMove = (event: MouseEvent | TouchEvent | PointerEvent, info: any) => {
         if (!onDragOverChange) return;
 
-        // Calculate Dragged Card Center using Pointer + Offset
-        // This avoids layout projection issues with getBoundingClientRect() during drag
-        const { y: pointerY } = getClientPoint(event);
+        const { x: pointerX, y: pointerY } = getClientPoint(event);
         const cardCenterY = pointerY + dragOffsetY.current;
 
-        const targetRow = findClosestDayRow(cardCenterY);
+        // Use elementFromPoint for robust "what is under the finger/card" detection
+        // We use the pointer X but the calculated CARD Center Y to feel connected to the card
+        const targetElement = document.elementFromPoint(pointerX, cardCenterY);
+        const targetRow = targetElement?.closest('[data-day-row="true"]');
 
         if (targetRow) {
             const targetDateStr = targetRow.getAttribute('data-date');
@@ -225,11 +198,11 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
         // Cleanup
         activeDragElementRef.current = null;
 
-        // Check if dropped on another day using Card Center
-        const { y: pointerY } = getClientPoint(event);
+        const { x: pointerX, y: pointerY } = getClientPoint(event);
         const cardCenterY = pointerY + dragOffsetY.current;
 
-        const targetRow = findClosestDayRow(cardCenterY);
+        const targetElement = document.elementFromPoint(pointerX, cardCenterY);
+        const targetRow = targetElement?.closest('[data-day-row="true"]');
 
         if (targetRow) {
             const targetDateStr = targetRow.getAttribute('data-date');

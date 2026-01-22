@@ -117,6 +117,51 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
 
     const dragOffsetY = useRef(0);
 
+
+
+    const SNAP_THRESHOLD = 56; // px
+
+    const findClosestDayRow = (y: number) => {
+        const rows = document.querySelectorAll('[data-day-row="true"]');
+        let closestRow: HTMLElement | null = null;
+        let minDistance = Infinity;
+
+        // Iterate all rows to find the absolute closest one first
+        for (const row of Array.from(rows) as HTMLElement[]) {
+            const rect = row.getBoundingClientRect();
+            // Core Principle: Use Viewport/Client coordinates (rect.top is relative to viewport)
+            const rowCenterY = rect.top + rect.height / 2;
+            const distance = Math.abs(y - rowCenterY);
+
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestRow = row;
+            }
+        }
+
+        // Acceptance Criteria: Valid only if within SNAP_THRESHOLD
+        // Increase threshold slightly for touch precision if needed
+        if (closestRow && minDistance <= SNAP_THRESHOLD) {
+            return closestRow;
+        }
+        return null;
+    };
+
+    const getClientPoint = (event: MouseEvent | TouchEvent | PointerEvent) => {
+        let clientX, clientY;
+        if ((event as any).touches && (event as any).touches.length > 0) {
+            clientX = (event as any).touches[0].clientX;
+            clientY = (event as any).touches[0].clientY;
+        } else if ((event as any).changedTouches && (event as any).changedTouches.length > 0) {
+            clientX = (event as any).changedTouches[0].clientX;
+            clientY = (event as any).changedTouches[0].clientY;
+        } else {
+            clientX = (event as any).clientX;
+            clientY = (event as any).clientY;
+        }
+        return { x: clientX, y: clientY };
+    }
+
     const handleItemDragStart = (event: any) => {
         isDraggingRef.current = true;
         // Capture the dragged element (the button)
@@ -133,10 +178,11 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
 
         // Calculate initial offset between Pointer and Card Center
         // This ensures the logic uses the "Visual Card Center" regardless of where the user grabbed it
-        const { y: pointerY } = getPagePoint(event);
+        const { y: pointerY } = getClientPoint(event);
         if (activeDragElementRef.current) {
             const rect = activeDragElementRef.current.getBoundingClientRect();
-            const cardCenterY = rect.top + window.scrollY + rect.height / 2;
+            // rect.top is relative to viewport, which matches clientY
+            const cardCenterY = rect.top + rect.height / 2;
             dragOffsetY.current = cardCenterY - pointerY;
         }
 
@@ -146,54 +192,12 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
         }
     };
 
-    const SNAP_THRESHOLD = 56; // px
-
-    const findClosestDayRow = (y: number) => {
-        const rows = document.querySelectorAll('[data-day-row="true"]');
-        let closestRow: HTMLElement | null = null;
-        let minDistance = Infinity;
-
-        // Iterate all rows to find the absolute closest one first
-        for (const row of Array.from(rows) as HTMLElement[]) {
-            const rect = row.getBoundingClientRect();
-            // Core Principle: Use page/document coordinates
-            const rowCenterY = rect.top + window.scrollY + rect.height / 2;
-            const distance = Math.abs(y - rowCenterY);
-
-            if (distance < minDistance) {
-                minDistance = distance;
-                closestRow = row;
-            }
-        }
-
-        // Acceptance Criteria: Valid only if within SNAP_THRESHOLD
-        if (closestRow && minDistance <= SNAP_THRESHOLD) {
-            return closestRow;
-        }
-        return null;
-    };
-
-    const getPagePoint = (event: MouseEvent | TouchEvent | PointerEvent) => {
-        let pageX, pageY;
-        if ((event as any).touches && (event as any).touches.length > 0) {
-            pageX = (event as any).touches[0].pageX;
-            pageY = (event as any).touches[0].pageY;
-        } else if ((event as any).changedTouches && (event as any).changedTouches.length > 0) {
-            pageX = (event as any).changedTouches[0].pageX;
-            pageY = (event as any).changedTouches[0].pageY;
-        } else {
-            pageX = (event as any).pageX;
-            pageY = (event as any).pageY;
-        }
-        return { x: pageX, y: pageY };
-    }
-
     const handleItemDragMove = (event: MouseEvent | TouchEvent | PointerEvent, info: any) => {
         if (!onDragOverChange) return;
 
         // Calculate Dragged Card Center using Pointer + Offset
         // This avoids layout projection issues with getBoundingClientRect() during drag
-        const { y: pointerY } = getPagePoint(event);
+        const { y: pointerY } = getClientPoint(event);
         const cardCenterY = pointerY + dragOffsetY.current;
 
         const targetRow = findClosestDayRow(cardCenterY);
@@ -222,7 +226,7 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
         activeDragElementRef.current = null;
 
         // Check if dropped on another day using Card Center
-        const { y: pointerY } = getPagePoint(event);
+        const { y: pointerY } = getClientPoint(event);
         const cardCenterY = pointerY + dragOffsetY.current;
 
         const targetRow = findClosestDayRow(cardCenterY);

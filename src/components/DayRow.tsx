@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, Reorder } from "framer-motion";
 import styles from "./DayRow.module.css";
 import { PasteIcon } from "./Icons";
@@ -116,6 +117,17 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
     const [containerSize, setContainerSize] = useState<{ width: number; height: number } | null>(null);
 
     const dragOffsetY = useRef(0);
+    const dragOffsetX = useRef(0); // For portal positioning
+
+    // Drag Portal State
+    const [draggingDishId, setDraggingDishId] = useState<string | null>(null);
+    const [dragOverlay, setDragOverlay] = useState<{
+        x: number;
+        y: number;
+        dish: any;
+        width: number;
+        height: number;
+    } | null>(null);
 
 
 
@@ -165,25 +177,7 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
             const rowCenterY_Viewport = rect.top + (rect.height / 2);
             const rowCenterY_Container = rowCenterY_Viewport - containerRect.top + scrollTop;
 
-            // DEBUG: Visualize Row Center
-            if (true) {
-                const date = r.getAttribute('data-date');
-                const id = `debug-row-${date}`;
-                let el = document.getElementById(id);
-                if (!el) {
-                    el = document.createElement('div');
-                    el.id = id;
-                    el.style.position = 'absolute';
-                    el.style.height = '2px';
-                    el.style.width = '100%';
-                    el.style.background = 'rgba(255, 0, 0, 0.3)'; // Faint red
-                    el.style.zIndex = '9999';
-                    el.style.pointerEvents = 'none';
-                    r.style.position = 'relative';
-                    r.appendChild(el);
-                }
-                el.style.top = '50%';
-            }
+
 
             const distance = Math.abs(cardCenterY_Container - rowCenterY_Container);
 
@@ -197,11 +191,12 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
     };
 
 
-    const handleItemDragStart = (event: any) => {
+    const handleItemDragStart = (event: any, dish: any) => {
         isDraggingRef.current = true;
         // Capture the dragged element (the button)
         const target = event.target as HTMLElement;
-        activeDragElementRef.current = target.closest('button') || target;
+        const buttonEl = target.closest('button') || target;
+        activeDragElementRef.current = buttonEl;
 
         if (sliderRef.current) {
             setContainerSize({
@@ -211,16 +206,29 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
         }
         setIsInternalDragging(true);
 
-        // Calculate initial offset between Pointer and Card Center
-        const { y: pointerY } = getClientPoint(event);
+        // Calculate initial offset between Pointer and Card Center / TopLeft
+        const { x: pointerX, y: pointerY } = getClientPoint(event);
+
         if (activeDragElementRef.current) {
             const rect = activeDragElementRef.current.getBoundingClientRect();
-            // rect.top is relative to viewport.
             // visual card center relative to viewport:
             const cardCenterY_Viewport = rect.top + rect.height / 2;
 
-            // We store offset relative to Viewport Y to easily reconstruct Visual Center from Pointer Y
+            // Offset for drop logic (center based)
             dragOffsetY.current = cardCenterY_Viewport - pointerY;
+
+            // Offset for visual portal (top-left based)
+            dragOffsetX.current = pointerX - rect.left;
+
+            // Set Drag Overlay State
+            setDraggingDishId(dish.id);
+            setDragOverlay({
+                x: rect.left,
+                y: rect.top,
+                dish: dish,
+                width: rect.width,
+                height: rect.height
+            });
         }
 
         if (longPressTimer.current) {
@@ -230,41 +238,48 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
     };
 
     const handleItemDragMove = (event: MouseEvent | TouchEvent | PointerEvent, info: any) => {
-        if (!onDragOverChange || !activeDragElementRef.current) return;
+        if (!activeDragElementRef.current) return; // Allow move updates for portal even if onDragOverChange missing? No, safety first.
 
-        const { y: pointerY } = getClientPoint(event);
+        const { x: pointerX, y: pointerY } = getClientPoint(event);
 
-        // 1. Reconstruct Current Card Visual Center in Viewport
+        // 1. Update Portal Position
+        if (dragOverlay) {
+            setDragOverlay(prev => prev ? ({
+                ...prev,
+                x: pointerX - dragOffsetX.current,
+                y: pointerY - (prev.height / 2) // Approximate Y centering or use offset? 
+                // Actually better to use the same logic: offset from top
+                // Let's use the captured offset to be precise
+                // We didn't capture Y offset for top-left, we captured it for center.
+                // Let's deduce top offset from center offset.
+                // rect.top = center - height/2. 
+                // center = pointer + dragOffsetY. 
+                // So rect.top = (pointer + dragOffsetY) - height/2
+            }) : null);
+
+            // Refined Y calc for Portal based on center offset logic
+            const currentCardCenterY_Viewport = pointerY + dragOffsetY.current;
+            const renderTop = currentCardCenterY_Viewport - (dragOverlay.height / 2);
+
+            setDragOverlay(prev => prev ? ({
+                ...prev,
+                x: pointerX - dragOffsetX.current,
+                y: renderTop
+            }) : null);
+        }
+
+        if (!onDragOverChange) return;
+
+        // 2. Reconstruct Current Card Visual Center in Viewport
         const currentCardCenterY_Viewport = pointerY + dragOffsetY.current;
 
-        // 2. Identify Scroll Container
+        // 3. Identify Scroll Container
         const container = getScrollParent(activeDragElementRef.current);
         const containerRect = container.getBoundingClientRect();
         const scrollTop = container.scrollTop;
 
-        // 3. Convert Card Center to Container Coordinates
-        // This is the TRUTH.
+        // 4. Convert Card Center to Container Coordinates
         const currentCardCenterY_Container = currentCardCenterY_Viewport - containerRect.top + scrollTop;
-
-        // DEBUG: Visualize Card Center (Global line following card)
-        if (true) {
-            let el = document.getElementById('debug-card-center');
-            if (!el) {
-                el = document.createElement('div');
-                el.id = 'debug-card-center';
-                el.style.position = 'fixed';
-                el.style.height = '2px';
-                el.style.width = '100vw'; // Full width to see alignment
-                el.style.left = '0';
-                el.style.background = 'lime';
-                el.style.zIndex = '10000';
-                el.style.pointerEvents = 'none';
-                document.body.appendChild(el);
-            }
-            // Update position (Viewport coords for fixed element)
-            el.style.top = `${currentCardCenterY_Viewport}px`;
-            el.style.display = 'block';
-        }
 
         const targetRow = findClosestDayRow(currentCardCenterY_Container, container);
 
@@ -274,7 +289,6 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
                 onDragOverChange(new Date(targetDateStr));
             }
         } else {
-            // Should rarely happen given logic says "closest", but handled just in case
             onDragOverChange(null);
         }
     };
@@ -282,11 +296,12 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
     const handleItemDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: any, dish: any) => {
         setIsInternalDragging(false);
         setContainerSize(null);
+        setDragOverlay(null);
+        setDraggingDishId(null);
         if (onDragOverChange) onDragOverChange(null);
 
         // Hide Debug Line
-        const debugEl = document.getElementById('debug-card-center');
-        if (debugEl) debugEl.style.display = 'none';
+
 
         // Reset dragging status with a small delay
         setTimeout(() => {
@@ -431,7 +446,7 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
                                     layoutId={layoutId}
                                     onClick={() => handleDishClick(dish, layoutId)}
                                     drag
-                                    onDragStart={handleItemDragStart}
+                                    onDragStart={(e) => handleItemDragStart(e, dish)}
                                     onDrag={handleItemDragMove}
                                     onDragEnd={(event, info) => handleItemDragEnd(event, info, dish)}
                                     // Long press
@@ -448,7 +463,8 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
                                     whileDrag={{ scale: 0.98 }}
                                     as="button"
                                     style={{
-                                        pointerEvents: isInternalDragging ? 'none' : 'auto'
+                                        pointerEvents: isInternalDragging ? 'none' : 'auto',
+                                        opacity: draggingDishId === dish.id ? 0 : 1
                                     }}
                                 >
                                     {dish.image && (
@@ -471,6 +487,35 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
                     </Reorder.Group>
                 </div>
             </div>
+
+            {
+                dragOverlay && createPortal(
+                    <div
+                        className={styles.dragOverlayItem}
+                        style={{
+                            position: 'fixed',
+                            left: dragOverlay.x,
+                            top: dragOverlay.y,
+                            width: dragOverlay.width,
+                            height: dragOverlay.height,
+                            zIndex: 9999,
+                            pointerEvents: 'none'
+                        }}
+                    >
+                        {dragOverlay.dish.image && (
+                            <img
+                                src={dragOverlay.dish.image}
+                                alt={dragOverlay.dish.name}
+                                className={styles.dishImage}
+                            />
+                        )}
+                        <span>
+                            {dragOverlay.dish.name}
+                        </span>
+                    </div>,
+                    document.body
+                )
+            }
         </div >
     );
 }

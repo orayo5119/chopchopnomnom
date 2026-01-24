@@ -206,3 +206,17 @@
     color: white;
     font-size: 16px;
 }
+
+/* Added for Portal Drag */
+.dragOverlayItem {
+    padding: 6px 10px;
+    background-color: white;
+    border: 1px solid var(--primary-orange);
+    border-radius: 8px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    /* Ensure it looks like the dish but elevated */
+}

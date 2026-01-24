@@ -419,7 +419,7 @@ export default function Planner() {
 
             <br />
             <div style={{ position: 'fixed', bottom: '5px', left: '50%', transform: 'translateX(-50%)', zIndex: 9999, fontSize: '10px', color: '#666', background: 'rgba(255,255,255,0.8)', padding: '2px 5px', borderRadius: '4px', pointerEvents: 'none' }}>
-                v1.0.9 - Single Scroll Layer
+                v1.0.10 - Fit Viewport Height
             </div>
         </div>
 

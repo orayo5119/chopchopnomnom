@@ -361,6 +361,7 @@ export default function Planner() {
                             <NoteComponent
                                 content={weeklyNote}
                                 onSave={saveNote}
+                                version="v1.0.12 - Sticky Note"
                             />
                         </div>
                     </motion.div>
@@ -417,10 +418,7 @@ export default function Planner() {
                 )}
             </AnimatePresence>
 
-            <br />
-            <div style={{ position: 'fixed', bottom: '5px', left: '50%', transform: 'translateX(-50%)', zIndex: 9999, fontSize: '10px', color: '#666', background: 'rgba(255,255,255,0.8)', padding: '2px 5px', borderRadius: '4px', pointerEvents: 'none' }}>
-                v1.0.11 - Build Fixed
-            </div>
+
         </div>
 
 

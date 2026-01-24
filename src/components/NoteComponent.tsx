@@ -9,9 +9,10 @@ import { ChevronUp, ChevronDown } from "./Icons";
 interface NoteComponentProps {
     content: string;
     onSave: (content: string) => void;
+    version?: string;
 }
 
-export default function NoteComponent({ content: initialContent, onSave }: NoteComponentProps) {
+export default function NoteComponent({ content: initialContent, onSave, version }: NoteComponentProps) {
     const [isExpanded, setIsExpanded] = useState(false);
     const [noteContent, setNoteContent] = useState(initialContent);
     const [showSavedToast, setShowSavedToast] = useState(false);
@@ -54,7 +55,10 @@ export default function NoteComponent({ content: initialContent, onSave }: NoteC
                 layoutId="note-container"
             >
                 <div className={styles.collapsedHeader}>
-                    <div className={styles.noteLabel}>Note:</div>
+                    <div className={styles.headerLeft}>
+                        {version && <span className={styles.version}>{version}</span>}
+                        <div className={styles.noteLabel}>Note:</div>
+                    </div>
                     <ChevronUp className={styles.chevron} />
                 </div>
                 <div className={styles.notePreview}>

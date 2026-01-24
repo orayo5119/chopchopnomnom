@@ -3,8 +3,8 @@
     height: 100%;
     /* Fill the wrapper */
     background-color: #F7F7F7;
-    padding: 12px 20px;
-    min-height: 64px;
+    padding: 8px 16px 8px 24px;
+    min-height: 56px;
     /* User requested 64px height */
     justify-content: center;
     border-top: 1px dashed #ccc;

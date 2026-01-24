@@ -230,18 +230,43 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
     };
 
     const handleItemDragMove = (event: MouseEvent | TouchEvent | PointerEvent, info: any) => {
-        if (!onDragOverChange) return;
+        if (!onDragOverChange || !activeDragElementRef.current) return;
 
         const { y: pointerY } = getClientPoint(event);
 
-        // Reconstruct Current Card Center in Viewport Coords
+        // 1. Reconstruct Current Card Visual Center in Viewport
         const currentCardCenterY_Viewport = pointerY + dragOffsetY.current;
 
-        // Convert to Page Coords for consistent comparison with Page-based Row positions
-        const scrollY = window.scrollY || document.documentElement.scrollTop;
-        const currentCardCenterY_Page = currentCardCenterY_Viewport + scrollY;
+        // 2. Identify Scroll Container
+        const container = getScrollParent(activeDragElementRef.current);
+        const containerRect = container.getBoundingClientRect();
+        const scrollTop = container.scrollTop;
 
-        const targetRow = findClosestDayRow(currentCardCenterY_Page);
+        // 3. Convert Card Center to Container Coordinates
+        // This is the TRUTH.
+        const currentCardCenterY_Container = currentCardCenterY_Viewport - containerRect.top + scrollTop;
+
+        // DEBUG: Visualize Card Center (Global line following card)
+        if (process.env.NODE_ENV !== 'production') {
+            let el = document.getElementById('debug-card-center');
+            if (!el) {
+                el = document.createElement('div');
+                el.id = 'debug-card-center';
+                el.style.position = 'fixed';
+                el.style.height = '2px';
+                el.style.width = '100vw'; // Full width to see alignment
+                el.style.left = '0';
+                el.style.background = 'lime';
+                el.style.zIndex = '10000';
+                el.style.pointerEvents = 'none';
+                document.body.appendChild(el);
+            }
+            // Update position (Viewport coords for fixed element)
+            el.style.top = `${currentCardCenterY_Viewport}px`;
+            el.style.display = 'block';
+        }
+
+        const targetRow = findClosestDayRow(currentCardCenterY_Container, container);
 
         if (targetRow) {
             const targetDateStr = targetRow.getAttribute('data-date');
@@ -259,22 +284,30 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
         setContainerSize(null);
         if (onDragOverChange) onDragOverChange(null);
 
+        // Hide Debug Line
+        const debugEl = document.getElementById('debug-card-center');
+        if (debugEl) debugEl.style.display = 'none';
+
         // Reset dragging status with a small delay
         setTimeout(() => {
             isDraggingRef.current = false;
         }, 100);
 
         // Cleanup
+        // Need to grab container BEFORE clearing ActiveRef
+        const target = event.target as HTMLElement;
+        const container = getScrollParent(target); // Optimistic best effort if ref is gone
+
         activeDragElementRef.current = null;
 
         const { y: pointerY } = getClientPoint(event);
 
-        // Same logic as Move
         const currentCardCenterY_Viewport = pointerY + dragOffsetY.current;
-        const scrollY = window.scrollY || document.documentElement.scrollTop;
-        const currentCardCenterY_Page = currentCardCenterY_Viewport + scrollY;
+        const containerRect = container.getBoundingClientRect();
+        const scrollTop = container.scrollTop;
+        const currentCardCenterY_Container = currentCardCenterY_Viewport - containerRect.top + scrollTop;
 
-        const targetRow = findClosestDayRow(currentCardCenterY_Page);
+        const targetRow = findClosestDayRow(currentCardCenterY_Container, container);
 
         if (targetRow) {
             const targetDateStr = targetRow.getAttribute('data-date');

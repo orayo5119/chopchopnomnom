@@ -60,7 +60,24 @@
     min-height: 0;
 }
 
-/* noteWrapper removed */
+/* noteWrapper removed - Replaced by noteContainer */
+.noteContainer {
+    flex-shrink: 0;
+    /* Ensure it doesn't shrink */
+    background-color: var(--surface-color);
+    border-top: 1px solid var(--border-color);
+    z-index: 10;
+    /* Ensure it sits above if needed */
+}
+
+.versionLabel {
+    text-align: center;
+    font-size: 10px;
+    color: #999;
+    padding: 8px 0 4px 0;
+    /* Space below note */
+    background-color: var(--surface-color);
+}
 
 
 .emptyState {

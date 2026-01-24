@@ -247,7 +247,7 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
         const currentCardCenterY_Container = currentCardCenterY_Viewport - containerRect.top + scrollTop;
 
         // DEBUG: Visualize Card Center (Global line following card)
-        if (process.env.NODE_ENV !== 'production') {
+        if (true) {
             let el = document.getElementById('debug-card-center');
             if (!el) {
                 el = document.createElement('div');

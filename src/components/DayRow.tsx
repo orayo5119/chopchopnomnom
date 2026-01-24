@@ -166,7 +166,7 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
             const rowCenterY_Container = rowCenterY_Viewport - containerRect.top + scrollTop;
 
             // DEBUG: Visualize Row Center
-            if (process.env.NODE_ENV !== 'production') {
+            if (true) {
                 const date = r.getAttribute('data-date');
                 const id = `debug-row-${date}`;
                 let el = document.getElementById(id);

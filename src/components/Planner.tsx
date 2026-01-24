@@ -416,6 +416,10 @@ export default function Planner() {
                 )}
             </AnimatePresence>
 
+            <br />
+            <div style={{ textAlign: 'center', fontSize: '0.7rem', color: '#888', paddingBottom: '20px' }}>
+                v1.0.1 - Drag Fix
+            </div>
         </div>
 
 

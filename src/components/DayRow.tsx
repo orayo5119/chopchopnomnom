@@ -134,6 +134,33 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
         return { x: clientX, y: clientY };
     }
 
+    // Helper: Find the row whose vertical center is closest to the card's visual center (Page Coordinates)
+    const findClosestDayRow = (cardCenterY_Page: number): HTMLElement | null => {
+        const rows = document.querySelectorAll('[data-day-row="true"]');
+        let closestRow: HTMLElement | null = null;
+        let minDistance = Infinity;
+
+        // current scroll position to convert viewport rects to page coords
+        const scrollY = window.scrollY || document.documentElement.scrollTop;
+
+        rows.forEach((row) => {
+            const r = row as HTMLElement;
+            const rect = r.getBoundingClientRect();
+            // Row center in page coordinates
+            const rowCenterY_Page = rect.top + scrollY + (rect.height / 2);
+
+            const distance = Math.abs(cardCenterY_Page - rowCenterY_Page);
+
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestRow = r;
+            }
+        });
+
+        return closestRow;
+    };
+
+
     const handleItemDragStart = (event: any) => {
         isDraggingRef.current = true;
         // Capture the dragged element (the button)
@@ -149,13 +176,15 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
         setIsInternalDragging(true);
 
         // Calculate initial offset between Pointer and Card Center
-        // This ensures the logic uses the "Visual Card Center" regardless of where the user grabbed it
         const { y: pointerY } = getClientPoint(event);
         if (activeDragElementRef.current) {
             const rect = activeDragElementRef.current.getBoundingClientRect();
-            // rect.top is relative to viewport, which matches clientY
-            const cardCenterY = rect.top + rect.height / 2;
-            dragOffsetY.current = cardCenterY - pointerY;
+            // rect.top is relative to viewport.
+            // visual card center relative to viewport:
+            const cardCenterY_Viewport = rect.top + rect.height / 2;
+
+            // We store offset relative to Viewport Y to easily reconstruct Visual Center from Pointer Y
+            dragOffsetY.current = cardCenterY_Viewport - pointerY;
         }
 
         if (longPressTimer.current) {
@@ -167,13 +196,16 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
     const handleItemDragMove = (event: MouseEvent | TouchEvent | PointerEvent, info: any) => {
         if (!onDragOverChange) return;
 
-        const { x: pointerX, y: pointerY } = getClientPoint(event);
-        const cardCenterY = pointerY + dragOffsetY.current;
+        const { y: pointerY } = getClientPoint(event);
 
-        // Use elementFromPoint for robust "what is under the finger/card" detection
-        // We use the pointer X but the calculated CARD Center Y to feel connected to the card
-        const targetElement = document.elementFromPoint(pointerX, cardCenterY);
-        const targetRow = targetElement?.closest('[data-day-row="true"]');
+        // Reconstruct Current Card Center in Viewport Coords
+        const currentCardCenterY_Viewport = pointerY + dragOffsetY.current;
+
+        // Convert to Page Coords for consistent comparison with Page-based Row positions
+        const scrollY = window.scrollY || document.documentElement.scrollTop;
+        const currentCardCenterY_Page = currentCardCenterY_Viewport + scrollY;
+
+        const targetRow = findClosestDayRow(currentCardCenterY_Page);
 
         if (targetRow) {
             const targetDateStr = targetRow.getAttribute('data-date');
@@ -181,6 +213,7 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
                 onDragOverChange(new Date(targetDateStr));
             }
         } else {
+            // Should rarely happen given logic says "closest", but handled just in case
             onDragOverChange(null);
         }
     };
@@ -190,7 +223,7 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
         setContainerSize(null);
         if (onDragOverChange) onDragOverChange(null);
 
-        // Reset dragging status with a small delay to prevent onClick from firing immediately after drag
+        // Reset dragging status with a small delay
         setTimeout(() => {
             isDraggingRef.current = false;
         }, 100);
@@ -198,14 +231,21 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
         // Cleanup
         activeDragElementRef.current = null;
 
-        const { x: pointerX, y: pointerY } = getClientPoint(event);
-        const cardCenterY = pointerY + dragOffsetY.current;
+        const { y: pointerY } = getClientPoint(event);
 
-        const targetElement = document.elementFromPoint(pointerX, cardCenterY);
-        const targetRow = targetElement?.closest('[data-day-row="true"]');
+        // Same logic as Move
+        const currentCardCenterY_Viewport = pointerY + dragOffsetY.current;
+        const scrollY = window.scrollY || document.documentElement.scrollTop;
+        const currentCardCenterY_Page = currentCardCenterY_Viewport + scrollY;
+
+        const targetRow = findClosestDayRow(currentCardCenterY_Page);
 
         if (targetRow) {
             const targetDateStr = targetRow.getAttribute('data-date');
+
+            // NOTE: We do NOT use elementFromPoint anymore.
+            // We rely 100% on the calculated closest row.
+
             if (targetDateStr && targetDateStr !== date.toISOString()) {
                 // Moved to another day
                 if (onMoveDish) {

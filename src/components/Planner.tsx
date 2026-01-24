@@ -357,11 +357,11 @@ export default function Planner() {
                         ))}
 
 
-                        <div style={{ paddingBottom: '32px' }}>
+                        <div style={{ paddingBottom: '80px' }}>
                             <NoteComponent
                                 content={weeklyNote}
                                 onSave={saveNote}
-                                version="v1.0.12 - Sticky Note"
+                                version="v1.0.13"
                             />
                         </div>
                     </motion.div>

@@ -119,6 +119,19 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
 
 
 
+    // Helper: Find the scrollable container
+    const getScrollParent = (node: HTMLElement | null): HTMLElement => {
+        if (!node) return document.documentElement;
+
+        const overflowY = window.getComputedStyle(node).overflowY;
+        const isScrollable = overflowY !== 'visible' && overflowY !== 'hidden';
+
+        if (isScrollable && node.scrollHeight > node.clientHeight) {
+            return node;
+        }
+        return getScrollParent(node.parentElement);
+    };
+
     const getClientPoint = (event: MouseEvent | TouchEvent | PointerEvent) => {
         let clientX, clientY;
         if ((event as any).touches && (event as any).touches.length > 0) {
@@ -134,22 +147,45 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
         return { x: clientX, y: clientY };
     }
 
-    // Helper: Find the row whose vertical center is closest to the card's visual center (Page Coordinates)
-    const findClosestDayRow = (cardCenterY_Page: number): HTMLElement | null => {
+    // Helper: Find the row whose vertical center is closest to the card's visual center (Container Coordinates)
+    const findClosestDayRow = (cardCenterY_Container: number, container: HTMLElement): HTMLElement | null => {
         const rows = document.querySelectorAll('[data-day-row="true"]');
         let closestRow: HTMLElement | null = null;
         let minDistance = Infinity;
 
-        // current scroll position to convert viewport rects to page coords
-        const scrollY = window.scrollY || document.documentElement.scrollTop;
+        // Container metrics
+        const containerRect = container.getBoundingClientRect();
+        const scrollTop = container.scrollTop;
 
         rows.forEach((row) => {
             const r = row as HTMLElement;
             const rect = r.getBoundingClientRect();
-            // Row center in page coordinates
-            const rowCenterY_Page = rect.top + scrollY + (rect.height / 2);
 
-            const distance = Math.abs(cardCenterY_Page - rowCenterY_Page);
+            // Row center in Container Coordinates
+            const rowCenterY_Viewport = rect.top + (rect.height / 2);
+            const rowCenterY_Container = rowCenterY_Viewport - containerRect.top + scrollTop;
+
+            // DEBUG: Visualize Row Center
+            if (process.env.NODE_ENV !== 'production') {
+                const date = r.getAttribute('data-date');
+                const id = `debug-row-${date}`;
+                let el = document.getElementById(id);
+                if (!el) {
+                    el = document.createElement('div');
+                    el.id = id;
+                    el.style.position = 'absolute';
+                    el.style.height = '2px';
+                    el.style.width = '100%';
+                    el.style.background = 'rgba(255, 0, 0, 0.3)'; // Faint red
+                    el.style.zIndex = '9999';
+                    el.style.pointerEvents = 'none';
+                    r.style.position = 'relative';
+                    r.appendChild(el);
+                }
+                el.style.top = '50%';
+            }
+
+            const distance = Math.abs(cardCenterY_Container - rowCenterY_Container);
 
             if (distance < minDistance) {
                 minDistance = distance;

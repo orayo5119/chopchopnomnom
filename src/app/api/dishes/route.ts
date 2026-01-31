@@ -45,7 +45,12 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { name, link, date } = body;
+    let { name, link, date } = body;
+
+    // Resolve TikTok link if present
+    if (link && (link.includes("tiktok.com") || link.includes("vt.tiktok.com"))) {
+        link = await resolveTikTokUrl(link);
+    }
 
     let image = body.image;
 
@@ -162,15 +167,46 @@ export async function PUT(request: Request) {
         return NextResponse.json({ error: "Dish not found or unauthorized" }, { status: 404 });
     }
 
+    let finalLink = link;
+    if (link && (link.includes("tiktok.com") || link.includes("vt.tiktok.com"))) {
+        finalLink = await resolveTikTokUrl(link);
+    }
+
     const updatedDish = await prisma.dish.update({
         where: { id },
         data: {
             name: name !== undefined ? name : undefined,
-            link: link !== undefined ? link : undefined,
+            link: finalLink !== undefined ? finalLink : undefined,
             date: date !== undefined ? date : undefined,
             order: order !== undefined ? order : undefined,
         },
     });
 
     return NextResponse.json(updatedDish);
+}
+
+async function resolveTikTokUrl(url: string): Promise<string> {
+    try {
+        // If it's already a full web URL with /video/, it's likely fine, 
+        // but we might want to clean parameters.
+        // If it's a short URL (vt.tiktok.com, tiktok.com/t/) we MUST resolve it.
+
+        const isShort = url.includes("vt.tiktok.com") || url.includes("/t/") || !url.includes("/video/");
+
+        if (isShort) {
+            const res = await fetch(url, {
+                method: 'HEAD',
+                redirect: 'follow',
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                }
+            });
+            return res.url;
+        }
+
+        return url;
+    } catch (e) {
+        console.error("Error resolving TikTok URL:", e);
+        return url;
+    }
 }

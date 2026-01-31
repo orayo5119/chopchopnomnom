@@ -55,11 +55,12 @@
 .videoContainer {
     width: 100%;
     /* 
-       Logic: (Screen - Header - CloseRow) * 0.9 
+       Logic: (Screen - Header - CloseRow) 
        Header = 10vh
        CloseRow = 56px
+       Use full available height.
     */
-    height: calc((100vh - 10vh - 56px) * 0.9);
+    height: calc(100vh - 10vh - 56px);
 
     padding: 0;
     padding-left: 16px;
@@ -96,8 +97,8 @@
     --target-video-h: 609px;
     --aspect-ratio: 322 / 609;
 
-    /* We add padding for shadows: Top 40px, Bottom 60px = 100px total */
-    --padding-v: 100px;
+    /* We reduce padding to maximize height: Top 10px, Bottom 20px = 30px total */
+    --padding-v: 30px;
 
     /* The actual video height: Use target 609px, but shrink if screen is too small */
     --video-h: min(var(--target-video-h), calc(var(--available-screen-h) - var(--padding-v)));
@@ -122,8 +123,8 @@
        Padding = 50vw - (CardWidth / 2).
        We subtract an extra ~16px for the frame border buffer to be visuals-perfect.
     */
-    padding-top: 40px;
-    padding-bottom: 60px;
+    padding-top: 10px;
+    padding-bottom: 20px;
     padding-left: calc(50vw - (var(--card-w) / 2) - 16px);
     padding-right: calc(50vw - (var(--card-w) / 2) - 16px);
 
@@ -155,7 +156,7 @@
     /* Shrink wrap the iframe width */
     background: black;
     border-radius: 36px;
-    border: 16px solid white;
+    /* border: 16px solid white; */
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
     overflow: hidden;
     position: relative;

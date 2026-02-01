@@ -16,11 +16,21 @@ export default function Header({ user }: HeaderProps) {
             <div
                 className={styles.profile}
                 onClick={() => signOut({ callbackUrl: "/login" })}
-                style={{ cursor: "pointer" }}
+                style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}
                 title="Sign Out"
             >
+                {/* Temp Debug: Show if image URL exists */}
+                <span style={{ fontSize: '10px', color: '#333' }}>
+                    {user?.image ? "Has Img" : "No Img"}
+                </span>
+
                 {user?.image ? (
-                    <img src={user.image} alt={user.name || "User"} className={styles.avatar} />
+                    <img
+                        src={user.image}
+                        alt={user.name || "User"}
+                        className={styles.avatar}
+                        referrerPolicy="no-referrer"
+                    />
                 ) : (
                     <div className={styles.avatarPlaceholder}>
                         {user?.name?.[0] || "U"}

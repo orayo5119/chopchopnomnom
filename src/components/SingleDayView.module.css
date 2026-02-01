@@ -200,7 +200,15 @@
 }
 
 /* Video Card Internals */
-/* .thumbnail removed */
+.videoPlaceholderSizer {
+    position: relative;
+    height: 100%;
+    /* Fill frame height */
+    aspect-ratio: 322 / 609;
+    /* Force specific ratio to drive width */
+    width: auto;
+    background-color: black;
+}
 
 .playOverlay {
     position: absolute;

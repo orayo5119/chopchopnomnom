@@ -19,11 +19,6 @@ export default function Header({ user }: HeaderProps) {
                 style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}
                 title="Sign Out"
             >
-                {/* Temp Debug: Show if image URL exists */}
-                <span style={{ fontSize: '10px', color: '#333' }}>
-                    {user?.image ? "Has Img" : "No Img"}
-                </span>
-
                 {user?.image ? (
                     <img
                         src={user.image}

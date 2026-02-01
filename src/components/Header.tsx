@@ -6,6 +6,7 @@ interface HeaderProps {
 }
 
 export default function Header({ user }: HeaderProps) {
+    console.log("Header user prop:", user);
     return (
         <header className={styles.header}>
             <h1 className={styles.title}>ChopChopNomNom</h1>

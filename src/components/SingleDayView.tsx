@@ -97,7 +97,7 @@ export default function SingleDayView({ date, dish, dishes, onBack }: SingleDayV
             const firstChild = container.children[0] as HTMLElement;
             if (firstChild) {
                 const cardWidth = firstChild.offsetWidth;
-                const gap = 16;
+                const gap = 32;
                 const targetScroll = targetIndex * (cardWidth + gap);
                 container.scrollTo({
                     left: targetScroll,
@@ -134,7 +134,7 @@ export default function SingleDayView({ date, dish, dishes, onBack }: SingleDayV
             const firstChild = container.children[0] as HTMLElement;
             if (firstChild) {
                 const cardWidth = firstChild.offsetWidth;
-                const gap = 16; // from CSS
+                const gap = 32; // from CSS
                 const targetScroll = targetIndex * (cardWidth + gap);
 
                 container.scrollTo({

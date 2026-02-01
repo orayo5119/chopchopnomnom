@@ -129,7 +129,7 @@
     padding-left: calc(50vw - (var(--card-w) / 2) - 16px);
     padding-right: calc(50vw - (var(--card-w) / 2) - 16px);
 
-    gap: 16px;
+    gap: 32px;
     /* Space between cards */
 
     overflow-x: auto;

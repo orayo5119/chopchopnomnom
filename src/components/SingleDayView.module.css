@@ -99,7 +99,8 @@
     --aspect-ratio: 322 / 609;
 
     /* We reduce padding to maximize height: 16px total to be safe but minimal */
-    --padding-v: 16px;
+    /* UPDATED: Need more vertical space (50px) to show the top title inside the container! */
+    --padding-v: 50px;
 
     /* The actual video height: Fill available space minus padding */
     --video-h: calc(var(--available-screen-h) - var(--padding-v));
@@ -124,8 +125,9 @@
        Padding = 50vw - (CardWidth / 2).
        We subtract an extra ~16px for the frame border buffer to be visuals-perfect.
     */
-    padding-top: 8px;
-    padding-bottom: 8px;
+    /* UPDATED: Top padding 40px to reveal title (-30px abs pos) */
+    padding-top: 40px;
+    padding-bottom: 10px;
     padding-left: calc(50vw - (var(--card-w) / 2) - 16px);
     padding-right: calc(50vw - (var(--card-w) / 2) - 16px);
 

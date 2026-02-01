@@ -319,18 +319,7 @@ function VideoCard({
                         ></iframe>
                     ) : (
                         <>
-                            <div className={styles.thumbnail}>
-                                <img
-                                    src={dish.image}
-                                    alt={dish.name}
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                    onError={(e) => {
-                                        e.currentTarget.src = `https://ui-avatars.com/api/?name=${dish.name}&background=random&size=512`;
-                                        e.currentTarget.onerror = null;
-                                    }}
-                                />
-                            </div>
-                            <div className={styles.playOverlay} onClick={handlePlay}>
+                            <div className={styles.playOverlay} onClick={handlePlay} style={{ backgroundColor: '#000' }}>
                                 <svg className={styles.playIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

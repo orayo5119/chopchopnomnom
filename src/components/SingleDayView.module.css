@@ -200,21 +200,7 @@
 }
 
 /* Video Card Internals */
-.thumbnail {
-    position: relative;
-    /* Change from absolute to relative to provide structure */
-    top: auto;
-    left: auto;
-    width: auto;
-    /* Allow aspect ratio to drive width */
-    height: 100%;
-    /* Fill frame height */
-    aspect-ratio: 322 / 609;
-    /* Force specific ratio */
-    background-size: cover;
-    background-position: center;
-    z-index: 1;
-}
+/* .thumbnail removed */
 
 .playOverlay {
     position: absolute;
@@ -418,15 +404,7 @@
     /* Prevent text selection while dragging */
 }
 
-.headerChipIcon {
-    width: 24px;
-    height: 24px;
-    border-radius: 4px;
-    background-size: cover;
-    background-position: center;
-    background-color: #eee;
-    flex-shrink: 0;
-}
+/* .headerChipIcon removed */
 
 .headerChipText {
     font-size: 14px;

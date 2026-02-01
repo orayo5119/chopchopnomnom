@@ -467,17 +467,7 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
                                         opacity: draggingDishId === dish.id ? 0 : 1
                                     }}
                                 >
-                                    {dish.image && (
-                                        <img
-                                            src={dish.image}
-                                            alt={dish.name}
-                                            className={styles.dishImage}
-                                            onError={(e) => {
-                                                e.currentTarget.src = "https://loremflickr.com/500/500/food,meal";
-                                                e.currentTarget.onerror = null;
-                                            }}
-                                        />
-                                    )}
+                                    {/* Thumbnail Removed */}
                                     <motion.span layoutId={`${layoutId}-text`}>
                                         {dish.name}
                                     </motion.span>
@@ -502,13 +492,7 @@ export default function DayRow({ date, dayName, dishes = [], onAddDish, onDishCl
                             pointerEvents: 'none'
                         }}
                     >
-                        {dragOverlay.dish.image && (
-                            <img
-                                src={dragOverlay.dish.image}
-                                alt={dragOverlay.dish.name}
-                                className={styles.dishImage}
-                            />
-                        )}
+                        {/* Thumbnail Removed */}
                         <span>
                             {dragOverlay.dish.name}
                         </span>

@@ -170,13 +170,7 @@
     flex-shrink: 0;
 }
 
-.dishImage {
-    width: 24px;
-    height: 24px;
-    border-radius: 4px;
-    object-fit: cover;
-    flex-shrink: 0;
-}
+/* .dishImage removed */
 
 .dish:hover {
     border-color: var(--primary-orange);

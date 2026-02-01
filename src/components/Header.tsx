@@ -22,11 +22,16 @@ export default function Header({ user }: HeaderProps) {
                 style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}
                 title="Sign Out"
             >
-                {/* Debug: check URL source */}
-                <span style={{ fontSize: '9px', color: '#fff', maxWidth: '100px', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                    {user?.image ? user.image.substring(0, 25) : "No URL"}
-                    {imgError && " (ERR)"}
-                </span>
+                {/* Debug: check URL source and email */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginRight: '8px' }}>
+                    <span style={{ fontSize: '9px', color: '#fff' }}>
+                        {user?.email || "No Email"}
+                    </span>
+                    <span style={{ fontSize: '9px', color: '#fff', maxWidth: '100px', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                        {user?.image ? "Img: " + user.image.substring(0, 15) + "..." : "No Img"}
+                        {imgError && " (ERR)"}
+                    </span>
+                </div>
 
                 {user?.image && !imgError ? (
                     <img

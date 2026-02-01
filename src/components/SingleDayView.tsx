@@ -364,7 +364,7 @@ function getEmbedUrl(url: string): string {
         }
 
         // For TikTok and others, also try to append mute for better autoplay chance
-        return `${finalUrl}${separator}mute=1&playsinline=1`;
+        return `${finalUrl}${separator}mute=1&muted=1&auto_play=1&playsinline=1`;
     } catch (e) {
         return url;
     }

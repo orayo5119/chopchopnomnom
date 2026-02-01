@@ -361,7 +361,7 @@ export default function Planner() {
                             <NoteComponent
                                 content={weeklyNote}
                                 onSave={saveNote}
-                                version="v1.0.25"
+                                version="v1.0.26"
                             />
                         </div>
                     </motion.div>

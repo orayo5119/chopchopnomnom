@@ -299,36 +299,21 @@ function VideoCard({
 }) {
     const hasLink = !!dish.link;
 
-    const handlePlay = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        onPlay();
-    };
+    // We no longer need a manual play handler because we are always rendering the iframe.
+    // The user interacts directly with the YouTube/TikTok player.
 
     return (
         <div className={styles.videoWrapper}>
             <span className={styles.videoTitle}>{dish.name}</span>
             <div className={styles.phoneFrame}>
                 {hasLink ? (
-                    isPlaying ? (
-                        <iframe
-                            src={getEmbedUrl(dish.link!) + "&autoplay=1"} // Try to auto-play
-                            className={styles.iframe}
-                            scrolling="no"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                        ></iframe>
-                    ) : (
-                        <>
-                            <div className={styles.videoPlaceholderSizer}>
-                                <div className={styles.playOverlay} onClick={handlePlay} style={{ backgroundColor: '#000' }}>
-                                    <svg className={styles.playIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                </div>
-                            </div>
-                        </>
-                    )
+                    <iframe
+                        src={getEmbedUrl(dish.link!) + (isPlaying ? "&autoplay=1" : "")}
+                        className={styles.iframe}
+                        scrolling="no"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                    ></iframe>
                 ) : (
                     <div className={styles.videoPlaceholder}>
                         <p>No video link provided</p>

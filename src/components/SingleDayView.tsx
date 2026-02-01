@@ -240,17 +240,7 @@ export default function SingleDayView({ date, dish, dishes, onBack }: SingleDayV
                                         className={styles.headerChip}
                                         onClick={() => handleChipClick(d.id)}
                                     >
-                                        <div className={styles.headerChipIcon}>
-                                            <img
-                                                src={d.image}
-                                                alt=""
-                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                                onError={(e) => {
-                                                    e.currentTarget.src = `https://ui-avatars.com/api/?name=${d.name}&background=random&size=64`;
-                                                    e.currentTarget.onerror = null;
-                                                }}
-                                            />
-                                        </div>
+                                        {/* Thumbnail Removed */}
                                         <span className={styles.headerChipText}>{d.name}</span>
                                     </div>
                                 ))}

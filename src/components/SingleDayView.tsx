@@ -348,7 +348,7 @@ function getEmbedUrl(url: string): string {
             const parts = url.split("/").filter(Boolean); // Remove empty strings from trailing slashes
             const lastPart = parts[parts.length - 1];
             const videoId = lastPart.split("?")[0];
-            finalUrl = `https://www.tiktok.com/embed/v2/${videoId}`;
+            finalUrl = `https://www.tiktok.com/player/v1/${videoId}`;
         }
         // Instagram
         else if (url.includes("instagram.com/reel")) {
@@ -364,7 +364,7 @@ function getEmbedUrl(url: string): string {
         }
 
         // For TikTok and others, also try to append mute for better autoplay chance
-        return `${finalUrl}${separator}mute=1&playsinline=1`;
+        return `${finalUrl}${separator}mute=1&autoplay=1&playsinline=1`;
     } catch (e) {
         return url;
     }

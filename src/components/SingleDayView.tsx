@@ -360,11 +360,13 @@ function getEmbedUrl(url: string): string {
 
         // Append YouTube specific params for better UX (Controls, No Rel, etc.)
         if (isYouTube) {
-            return `${finalUrl}${separator}controls=1&rel=0&modestbranding=1&playsinline=1&mute=1`;
+            // Removed mute=1 per user request
+            return `${finalUrl}${separator}controls=1&rel=0&modestbranding=1&playsinline=1`;
         }
 
-        // For TikTok and others, also try to append mute for better autoplay chance
-        return `${finalUrl}${separator}mute=1&playsinline=1`;
+        // For TikTok and others
+        // Removed mute=1 per user request
+        return `${finalUrl}${separator}playsinline=1`;
     } catch (e) {
         return url;
     }

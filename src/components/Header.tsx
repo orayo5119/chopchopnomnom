@@ -15,9 +15,17 @@ export default function Header({ user }: HeaderProps) {
             <div
                 className={styles.profile}
                 onClick={() => signOut({ callbackUrl: "/login" })}
-                style={{ cursor: "pointer" }}
-                title={`Sign Out (${user?.email || "Unknown"})`}
+                style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "12px" }}
+                title="Sign Out"
             >
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+                    <span style={{ fontSize: "14px", fontWeight: "600", color: "#fff" }}>
+                        {user?.name || "User"}
+                    </span>
+                    <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.8)" }}>
+                        {user?.email || ""}
+                    </span>
+                </div>
                 {user?.image ? (
                     <img
                         src={user.image}

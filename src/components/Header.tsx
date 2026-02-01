@@ -1,4 +1,7 @@
+"use client";
+
 import { DefaultSession } from "next-auth";
+import { signOut } from "next-auth/react";
 import styles from "./Header.module.css";
 
 interface HeaderProps {
@@ -10,7 +13,12 @@ export default function Header({ user }: HeaderProps) {
     return (
         <header className={styles.header}>
             <h1 className={styles.title}>ChopChopNomNom</h1>
-            <div className={styles.profile}>
+            <div
+                className={styles.profile}
+                onClick={() => signOut({ callbackUrl: "/login" })}
+                style={{ cursor: "pointer" }}
+                title="Sign Out"
+            >
                 {user?.image ? (
                     <img src={user.image} alt={user.name || "User"} className={styles.avatar} />
                 ) : (

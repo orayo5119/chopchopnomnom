@@ -20,7 +20,7 @@ export default function LoginPage() {
                 <div className={styles.circle}></div>
                 <button
                     className={styles.googleButton}
-                    onClick={() => signIn("google", { callbackUrl: "/" })}
+                    onClick={() => signIn("google", { callbackUrl: "/", prompt: "select_account" })}
                 >
                     <img
                         src="https://www.svgrepo.com/show/475656/google-color.svg"

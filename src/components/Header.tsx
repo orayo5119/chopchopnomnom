@@ -2,6 +2,7 @@
 
 import { DefaultSession } from "next-auth";
 import { signOut } from "next-auth/react";
+import { useState } from "react";
 import styles from "./Header.module.css";
 
 interface HeaderProps {
@@ -9,7 +10,9 @@ interface HeaderProps {
 }
 
 export default function Header({ user }: HeaderProps) {
+    const [imgError, setImgError] = useState(false);
     console.log("Header user prop:", user);
+
     return (
         <header className={styles.header}>
             <h1 className={styles.title}>ChopChopNomNom</h1>
@@ -19,12 +22,22 @@ export default function Header({ user }: HeaderProps) {
                 style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}
                 title="Sign Out"
             >
-                {user?.image ? (
+                {/* Debug: check URL source */}
+                <span style={{ fontSize: '9px', color: '#fff', maxWidth: '100px', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                    {user?.image ? user.image.substring(0, 25) : "No URL"}
+                    {imgError && " (ERR)"}
+                </span>
+
+                {user?.image && !imgError ? (
                     <img
                         src={user.image}
                         alt={user.name || "User"}
                         className={styles.avatar}
                         referrerPolicy="no-referrer"
+                        onError={(e) => {
+                            console.error("Image load error", e);
+                            setImgError(true);
+                        }}
                     />
                 ) : (
                     <div className={styles.avatarPlaceholder}>

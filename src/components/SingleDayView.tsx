@@ -298,64 +298,34 @@ function VideoCard({
     onPlay: () => void;
 }) {
     const hasLink = !!dish.link;
-
     const embedSrc = getEmbedUrl(dish.link!);
-    const isInstagram = embedSrc === "INSTAGRAM_EMBED";
+    const isInstagram = dish.link?.includes("instagram.com");
 
-    useEffect(() => {
-        if (isInstagram && dish.link) {
-            // Load Instagram script if not present
-            if (!window.instgrm) {
-                const script = document.createElement("script");
-                script.async = true;
-                script.src = "//www.instagram.com/embed.js";
-                document.body.appendChild(script);
-            }
-
-            // Process embeds
-            const processEmbeds = () => {
-                if (window.instgrm) {
-                    window.instgrm.Embeds.process();
-                }
-            };
-
-            // Small timeout to ensure DOM is ready or script loads
-            const timer = setTimeout(processEmbeds, 500);
-
-            // If the script is already there, it might need a re-trigger
-            if (window.instgrm) {
-                processEmbeds();
-            }
-
-            return () => clearTimeout(timer);
+    const getIframeSrc = () => {
+        let src = embedSrc;
+        // If it's Instagram, force autoplay and mute to try and bypass click-to-play wall
+        if (isInstagram) {
+            src += "&autoplay=1&muted=1";
+        } else if (isPlaying) {
+            src += "&autoplay=1";
         }
-    }, [isInstagram, dish.link]);
+        return src;
+    };
 
     return (
         <div className={styles.videoWrapper}>
             <span className={styles.videoTitle}>{dish.name}</span>
             <div className={styles.phoneFrame}>
                 {hasLink ? (
-                    isInstagram ? (
-                        <div style={{ width: '100%', height: '100%', overflowY: 'auto', display: 'flex', justifyContent: 'center', background: 'white' }}>
-                            <blockquote
-                                className="instagram-media"
-                                data-instgrm-captioned
-                                data-instgrm-permalink={dish.link}
-                                data-instgrm-version="14"
-                                style={{ background: '#FFF', border: 0, borderRadius: 3, boxShadow: 'none', margin: 1, maxWidth: 540, minWidth: 326, padding: 0, width: '99%' }}
-                            >
-                            </blockquote>
-                        </div>
-                    ) : (
-                        <iframe
-                            src={embedSrc + (isPlaying ? "&autoplay=1" : "")}
-                            className={styles.iframe}
-                            scrolling="no"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                        ></iframe>
-                    )
+                    <iframe
+                        src={getIframeSrc()}
+                        className={styles.iframe}
+                        scrolling="no"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        // Strict sandbox for Instagram: allow scripts/presentation, BLOCK popups (no allow-popups)
+                        {...(isInstagram ? { sandbox: "allow-scripts allow-same-origin allow-presentation" } : {})}
+                    ></iframe>
                 ) : (
                     <div className={styles.videoPlaceholder}>
                         <p>No video link provided</p>
@@ -394,28 +364,23 @@ function getEmbedUrl(url: string): string {
         }
         // Instagram
         else if (url.includes("instagram.com/reel") || url.includes("instagram.com/p")) {
-            return "INSTAGRAM_EMBED";
+            const cleanUrl = url.split("?")[0];
+            const urlWithSlash = cleanUrl.endsWith("/") ? cleanUrl : `${cleanUrl}/`;
+            // Use plain embed to minimize UI overhead
+            finalUrl = `${urlWithSlash}embed`;
         }
 
         // Add query separator if needed
         const separator = finalUrl.includes("?") ? "&" : "?";
 
-        // Append YouTube specific params for better UX (Controls, No Rel, etc.)
+        // Append YouTube specific params
         if (isYouTube) {
-            // Removed mute=1 per user request
             return `${finalUrl}${separator}controls=1&rel=0&modestbranding=1&playsinline=1`;
         }
 
         // For TikTok and others
-        // Removed mute=1 per user request
         return `${finalUrl}${separator}playsinline=1`;
     } catch (e) {
         return url;
-    }
-}
-
-declare global {
-    interface Window {
-        instgrm: any;
     }
 }

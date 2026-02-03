@@ -299,21 +299,63 @@ function VideoCard({
 }) {
     const hasLink = !!dish.link;
 
-    // We no longer need a manual play handler because we are always rendering the iframe.
-    // The user interacts directly with the YouTube/TikTok player.
+    const embedSrc = getEmbedUrl(dish.link!);
+    const isInstagram = embedSrc === "INSTAGRAM_EMBED";
+
+    useEffect(() => {
+        if (isInstagram && dish.link) {
+            // Load Instagram script if not present
+            if (!window.instgrm) {
+                const script = document.createElement("script");
+                script.async = true;
+                script.src = "//www.instagram.com/embed.js";
+                document.body.appendChild(script);
+            }
+
+            // Process embeds
+            const processEmbeds = () => {
+                if (window.instgrm) {
+                    window.instgrm.Embeds.process();
+                }
+            };
+
+            // Small timeout to ensure DOM is ready or script loads
+            const timer = setTimeout(processEmbeds, 500);
+
+            // If the script is already there, it might need a re-trigger
+            if (window.instgrm) {
+                processEmbeds();
+            }
+
+            return () => clearTimeout(timer);
+        }
+    }, [isInstagram, dish.link]);
 
     return (
         <div className={styles.videoWrapper}>
             <span className={styles.videoTitle}>{dish.name}</span>
             <div className={styles.phoneFrame}>
                 {hasLink ? (
-                    <iframe
-                        src={getEmbedUrl(dish.link!) + (isPlaying ? "&autoplay=1" : "")}
-                        className={styles.iframe}
-                        scrolling="no"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                    ></iframe>
+                    isInstagram ? (
+                        <div style={{ width: '100%', height: '100%', overflowY: 'auto', display: 'flex', justifyContent: 'center', background: 'white' }}>
+                            <blockquote
+                                className="instagram-media"
+                                data-instgrm-captioned
+                                data-instgrm-permalink={dish.link}
+                                data-instgrm-version="14"
+                                style={{ background: '#FFF', border: 0, borderRadius: 3, boxShadow: 'none', margin: 1, maxWidth: 540, minWidth: 326, padding: 0, width: '99%' }}
+                            >
+                            </blockquote>
+                        </div>
+                    ) : (
+                        <iframe
+                            src={embedSrc + (isPlaying ? "&autoplay=1" : "")}
+                            className={styles.iframe}
+                            scrolling="no"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                        ></iframe>
+                    )
                 ) : (
                     <div className={styles.videoPlaceholder}>
                         <p>No video link provided</p>
@@ -351,8 +393,8 @@ function getEmbedUrl(url: string): string {
             finalUrl = `https://www.tiktok.com/player/v1/${videoId}`;
         }
         // Instagram
-        else if (url.includes("instagram.com/reel")) {
-            finalUrl = `${url}embed`;
+        else if (url.includes("instagram.com/reel") || url.includes("instagram.com/p")) {
+            return "INSTAGRAM_EMBED";
         }
 
         // Add query separator if needed
@@ -369,5 +411,11 @@ function getEmbedUrl(url: string): string {
         return `${finalUrl}${separator}playsinline=1`;
     } catch (e) {
         return url;
+    }
+}
+
+declare global {
+    interface Window {
+        instgrm: any;
     }
 }
